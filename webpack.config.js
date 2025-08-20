@@ -4,10 +4,10 @@ module.exports = {
     mode: 'development',
     entry: './frontend/src/index.js',
     output: {
-        path: path.resolve(__dirname, 'frontend/public'),
+        path: path.resolve('public'),
         filename: 'bundle.js',
-        publicPath: '/'
     },
+    mode: 'development',
     module: {
         rules: [
             {
@@ -16,18 +16,7 @@ module.exports = {
                 use: {
                     loader: 'babel-loader'
                 }
-            }
+            },
         ]
-    },
-    resolve: {
-        extensions: ['.js', '.jsx']
-    },
-    devServer: {
-        static: {
-            directory: path.join(__dirname, 'frontend/public')
-        },
-        port: 3000,
-        historyApiFallback: true,
-        hot: true
     }
 };
