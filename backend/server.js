@@ -25,21 +25,21 @@ app.use((req, res, next) => {
 const dummyUsers = [
     {
         id: 1,
-        email: 'john@example.com',
+        email: 'noah@example.com',
         password: 'password123',
-        name: 'John Developer',
-        company: 'Tech Corp',
-        country: 'USA',
-        birthDate: '1990/01/15'
+        name: 'Noah Dollenberg',
+        company: 'NJD',
+        country: 'South Africa',
+        birthDate: '2005/09/05'
     },
     {
         id: 2,
-        email: 'sarah@example.com',
-        password: 'password456',
-        name: 'Sarah Coder',
-        company: 'StartupXYZ',
-        country: 'Canada',
-        birthDate: '1992/05/22'
+        email: 'john@example.com',
+        password: 'password123',
+        name: 'John Doe',
+        company: 'JD Corp',
+        country: 'England',
+        birthDate: '2000/05/22'
     }
 ];
 
