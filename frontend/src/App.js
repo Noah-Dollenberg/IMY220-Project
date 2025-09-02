@@ -1,13 +1,25 @@
+// NJ (Noah) Dollenberg u24596142
 import React from 'react';
-import { BrowserRouter, Route, Routes, createBrowserRouter } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import SplashPage from './pages/SplashPage';
+import HomePage from './pages/HomePage';
+import ProfilePage from './pages/ProfilePage';
+import ProjectPage from './pages/ProjectPage';
 
-function App() {
+const App = () => {
     return (
-        <div>
-            <h1>Version Control Website</h1>
-            <p>Welcome to my IMY 220 Project!</p>
-        </div>
+        <BrowserRouter>
+            <div className="app">
+                <Routes>
+                    <Route path="/" element={<SplashPage />} />
+                    <Route path="/home" element={<HomePage />} />
+                    <Route path="/profile/:userId" element={<ProfilePage />} />
+                    <Route path="/project/:projectId" element={<ProjectPage />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </div>
+        </BrowserRouter>
     );
-}
+};
 
 export default App;
