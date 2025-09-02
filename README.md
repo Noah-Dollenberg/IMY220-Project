@@ -5,12 +5,20 @@ I have cloned the file from GitHub to my machine.
 
 Now it was edited online
 
+# Run Code #
+# 1. node backend/server.js
+# 2. npm run build
+# 3. http://localhost:3000
+
 # Docker Commands #
-# 1. Build Docker Image
+# 1. Build docker image
 docker build -t imy220-project .
 
-# 2. Run Docker Container
-docker run -p 3000:3000 -p 5000:5000 imy220-project
+# 2. Run the docker container
+docker run --rm -p 3000:3000 imy220-project
 
-# 3. Access the website
+# 3. Access website
 http://localhost:3000
+
+# 4. Delete image after use
+docker rmi imy220-project

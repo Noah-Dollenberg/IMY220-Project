@@ -3,7 +3,7 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -226,12 +226,5 @@ console.log('Starting server...');
 console.log('Routes registered successfully');
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log('Available endpoints:');
-    console.log('  POST /api/auth/signup   - User registration');
-    console.log('  POST /api/auth/login    - User login');
-    console.log('  GET  /api/auth/me       - Get current user');
-    console.log('  POST /api/auth/logout   - User logout');
-    console.log('  GET  /api/health        - Health check');
+    console.log(`SUCCESS! Server is running on port ${PORT}`);
 });
