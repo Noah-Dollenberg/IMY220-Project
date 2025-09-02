@@ -20,5 +20,9 @@ docker run --rm -p 3000:3000 imy220-project
 # 3. Access website
 http://localhost:3000
 
-# 4. Delete image after use
+# 4. Stop running container after use
+docker stop $(docker ps -q --filter ancestor=imy220-project)
+
+# 5. Clean docker after use
+docker rm $(docker ps -aq --filter ancestor=imy220-project)
 docker rmi imy220-project
