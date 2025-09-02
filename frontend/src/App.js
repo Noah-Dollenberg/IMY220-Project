@@ -6,7 +6,7 @@ import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
 import ProjectPage from './pages/ProjectPage';
 
-const App = () => {
+function App() {
     return (
         <BrowserRouter>
             <div className="app">
@@ -20,6 +20,6 @@ const App = () => {
             </div>
         </BrowserRouter>
     );
-};
+}
 
 export default App;

@@ -222,6 +222,9 @@ app.use((err, req, res, next) => {
     });
 });
 
+console.log('Starting server...');
+console.log('Routes registered successfully');
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
