@@ -2,572 +2,577 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Khula:wght@300;400;600;700&display=swap');
 
 :root {
-  --fill-color: #CFDBD5;
-  --accent-bg: #E8EDDF;
-  --main-text: #242423;
-  --soft-text: #333533;
-  --highlight: #F5CB5C;
-  --white: #ffffff;
-  --black: #000000;
+    --fill-color: #CFDBD5;
+    --accent-bg: #E8EDDF;
+    --main-text: #242423;
+    --soft-text: #333533;
+    --highlight: #F5CB5C;
+    --white: #ffffff;
+    --black: #000000;
 }
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  font-family: 'Khula', sans-serif;
-  background-color: var(--accent-bg);
-  color: var(--main-text);
-  line-height: 1.6;
+    font-family: 'Khula', sans-serif;
+    background-color: var(--accent-bg);
+    color: var(--main-text);
+    line-height: 1.6;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 /* Button Styles */
 .btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
 }
 
 .btn-primary {
-  background-color: var(--highlight);
-  color: var(--main-text);
+    background-color: var(--highlight);
+    color: var(--main-text);
 }
 
 .btn-primary:hover {
-  background-color: #e6b84d;
-  transform: translateY(-2px);
+    background-color: #e6b84d;
+    transform: translateY(-2px);
 }
 
 .btn-secondary {
-  background-color: var(--fill-color);
-  color: var(--main-text);
+    background-color: var(--fill-color);
+    color: var(--main-text);
 }
 
 .btn-secondary:hover {
-  background-color: #bbc9bf;
-  transform: translateY(-2px);
+    background-color: #bbc9bf;
+    transform: translateY(-2px);
 }
 
 .btn-dark {
-  background-color: var(--main-text);
-  color: var(--white);
+    background-color: var(--main-text);
+    color: var(--white);
 }
 
 .btn-dark:hover {
-  background-color: var(--soft-text);
-  transform: translateY(-2px);
+    background-color: var(--soft-text);
+    transform: translateY(-2px);
 }
 
 .btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .btn-full {
-  width: 100%;
-  padding: 16px;
-  font-size: 18px;
-  font-weight: 600;
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 600;
 }
 
 .btn-large {
-  padding: 16px 40px;
-  font-size: 18px;
-  font-weight: 600;
-  min-width: 140px;
+    padding: 16px 40px;
+    font-size: 18px;
+    font-weight: 600;
+    min-width: 140px;
 }
 
 /* Form Styles */
 .form-group {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .form-label {
-  display: block;
-  margin-bottom: 8px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  color: var(--main-text);
+    display: block;
+    margin-bottom: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: var(--main-text);
 }
 
 .form-input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid var(--fill-color);
-  border-radius: 8px;
-  font-family: 'Khula', sans-serif;
-  font-size: 16px;
-  background-color: var(--white);
-  color: var(--main-text);
-  transition: border-color 0.3s ease;
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--fill-color);
+    border-radius: 8px;
+    font-family: 'Khula', sans-serif;
+    font-size: 16px;
+    background-color: var(--white);
+    color: var(--main-text);
+    transition: border-color 0.3s ease;
 }
 
 .form-input:focus {
-  outline: none;
-  border-color: var(--highlight);
+    outline: none;
+    border-color: var(--highlight);
 }
 
 .form-input.error {
-  border-color: #e74c3c;
+    border-color: #e74c3c;
 }
 
 .error-message {
-  color: #e74c3c;
-  font-size: 14px;
-  margin-top: 5px;
+    color: #e74c3c;
+    font-size: 14px;
+    margin-top: 5px;
 }
 
 .submit-error {
-  margin-bottom: 16px;
-  text-align: center;
-  font-weight: 500;
+    margin-bottom: 16px;
+    text-align: center;
+    font-weight: 500;
 }
 
 /* Checkbox Styles */
 .checkbox-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-family: 'Khula', sans-serif;
-  color: var(--main-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: 'Khula', sans-serif;
+    color: var(--main-text);
 }
 
 .checkbox-input {
-  display: none;
+    display: none;
 }
 
 .checkmark {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--fill-color);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: white;
-  transition: all 0.3s ease;
-  font-size: 14px;
-  color: var(--main-text);
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--fill-color);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    color: var(--main-text);
 }
 
-.checkbox-input:checked + .checkmark {
-  background-color: var(--highlight);
-  border-color: var(--highlight);
+.checkbox-input:checked+.checkmark {
+    background-color: var(--highlight);
+    border-color: var(--highlight);
 }
 
 /* Password Strength Indicator */
 .password-strength {
-  margin-top: 8px;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border: 1px solid var(--fill-color);
+    margin-top: 8px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid var(--fill-color);
 }
 
 .strength-indicator {
-  font-size: 14px;
-  margin-bottom: 4px;
-  font-family: 'Khula', sans-serif;
+    font-size: 14px;
+    margin-bottom: 4px;
+    font-family: 'Khula', sans-serif;
 }
 
 .strength-indicator:last-child {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .strength-indicator.valid {
-  color: #27ae60;
+    color: #27ae60;
 }
 
 .strength-indicator.invalid {
-  color: #e74c3c;
+    color: #e74c3c;
 }
 
 /* Navigation Styles */
 .navbar {
-  background-color: var(--white);
-  box-shadow: 0 2px 8px rgba(36, 36, 35, 0.1);
-  padding: 16px 0;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+    background-color: var(--white);
+    box-shadow: 0 2px 8px rgba(36, 36, 35, 0.1);
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .nav-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  font-size: 24px;
-  color: var(--main-text);
-  text-decoration: none;
-  transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--main-text);
+    text-decoration: none;
+    transition: color 0.3s ease;
 }
 
 .nav-brand:hover {
-  color: var(--highlight);
+    color: var(--highlight);
 }
 
 .brand-icon {
-  width: 40px;
-  height: 40px;
-  background-color: var(--main-text);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 700;
-  border-radius: 6px;
+    width: 40px;
+    height: 40px;
+    background-color: var(--main-text);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    border-radius: 6px;
 }
 
 .nav-links {
-  display: flex;
-  align-items: center;
-  gap: 32px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
 }
 
 .nav-link {
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  font-size: 16px;
-  color: var(--soft-text);
-  text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--soft-text);
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
 }
 
 .nav-link:hover {
-  color: var(--highlight);
-  background-color: rgba(245, 203, 92, 0.1);
+    color: var(--highlight);
+    background-color: rgba(245, 203, 92, 0.1);
 }
 
 .nav-link.active {
-  color: var(--highlight);
-  background-color: rgba(245, 203, 92, 0.15);
-  font-weight: 600;
+    color: var(--highlight);
+    background-color: rgba(245, 203, 92, 0.15);
+    font-weight: 600;
 }
 
 .create-btn {
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .user-profile {
-  margin-left: 8px;
+    margin-left: 8px;
 }
 
 .profile-pic {
-  width: 40px;
-  height: 40px;
-  background-color: var(--fill-color);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--main-text);
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+    width: 40px;
+    height: 40px;
+    background-color: var(--fill-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--main-text);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .profile-pic:hover {
-  background-color: var(--highlight);
+    background-color: var(--highlight);
 }
 
 /* Splash Page Styles */
 .splash-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #E8EDDF 0%, #CFDBD5 100%);
-  position: relative;
-  overflow-x: hidden;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #E8EDDF 0%, #CFDBD5 100%);
+    position: relative;
+    overflow-x: hidden;
 }
 
 .code-background {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-  pointer-events: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    pointer-events: none;
 }
 
 .code-symbol {
-  opacity: 0.8;
-  filter: blur(1px);
+    opacity: 0.8;
+    filter: blur(1px);
 }
 
 .splash-main {
-  position: relative;
-  z-index: 2;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
 }
 
 .splash-content {
-  text-align: center;
-  width: 100%;
+    text-align: center;
+    width: 100%;
 }
 
 .brand-section {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
 
 .logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
 }
 
 .logo-icon {
-  width: 80px;
-  height: 80px;
-  background-color: var(--main-text);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  font-size: 48px;
-  border-radius: 12px;
+    width: 80px;
+    height: 80px;
+    background-color: var(--main-text);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 48px;
+    border-radius: 12px;
 }
 
 .brand-name {
-  font-family: 'Inter', sans-serif;
-  font-size: 64px;
-  font-weight: 700;
-  color: var(--main-text);
-  margin: 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--main-text);
+    margin: 0;
 }
 
 .brand-tagline {
-  font-family: 'Khula', sans-serif;
-  font-size: 24px;
-  color: var(--soft-text);
-  font-style: italic;
+    font-family: 'Khula', sans-serif;
+    font-size: 24px;
+    color: var(--soft-text);
+    font-style: italic;
 }
 
 .hero-section {
-  margin-bottom: 80px;
+    margin-bottom: 80px;
 }
 
 .hero-title {
-  font-family: 'Khula', sans-serif;
-  font-size: 28px;
-  font-weight: 400;
-  color: var(--main-text);
-  max-width: 800px;
-  margin: 0 auto 40px;
-  line-height: 1.5;
+    font-family: 'Khula', sans-serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--main-text);
+    max-width: 800px;
+    margin: 0 auto 40px;
+    line-height: 1.5;
 }
 
 .cta-buttons {
-  display: flex;
-  gap: 24px;
-  justify-content: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
 }
 
 .free-text {
-  font-family: 'Khula', sans-serif;
-  font-size: 16px;
-  color: var(--soft-text);
-  font-style: italic;
+    font-family: 'Khula', sans-serif;
+    font-size: 16px;
+    color: var(--soft-text);
+    font-style: italic;
 }
 
 .splash-footer {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .splash-footer p {
-  font-family: 'Khula', sans-serif;
-  font-size: 14px;
-  color: var(--soft-text);
+    font-family: 'Khula', sans-serif;
+    font-size: 14px;
+    color: var(--soft-text);
 }
 
 /* Modal Styles */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
 }
 
 .modal-content {
-  background-color: white;
-  border-radius: 16px;
-  padding: 40px;
-  position: relative;
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
+    background-color: white;
+    border-radius: 16px;
+    padding: 40px;
+    position: relative;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modal-close {
-  position: absolute;
-  top: 16px;
-  right: 20px;
-  background: none;
-  border: none;
-  font-size: 32px;
-  color: var(--soft-text);
-  cursor: pointer;
-  line-height: 1;
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: var(--soft-text);
+    cursor: pointer;
+    line-height: 1;
 }
 
 .modal-close:hover {
-  color: var(--main-text);
+    color: var(--main-text);
 }
 
 /* Form Headers */
 .form-header {
-  text-align: center;
-  margin-bottom: 32px;
+    text-align: center;
+    margin-bottom: 32px;
 }
 
 .form-header h2 {
-  font-family: 'Inter', sans-serif;
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--main-text);
-  margin-bottom: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--main-text);
+    margin-bottom: 8px;
 }
 
 .form-header h3 {
-  font-family: 'Inter', sans-serif;
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--soft-text);
+    font-family: 'Inter', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--soft-text);
 }
 
 /* Home Page Styles */
 .home-page {
-  min-height: 100vh;
-  background-color: var(--accent-bg);
+    min-height: 100vh;
+    background-color: var(--accent-bg);
 }
 
 .home-content {
-  padding: 32px 0;
+    padding: 32px 0;
 }
 
 .home-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
 }
 
 .welcome-section h1 {
-  font-family: 'Inter', sans-serif;
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--main-text);
-  margin-bottom: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--main-text);
+    margin-bottom: 8px;
 }
 
 .welcome-section p {
-  font-family: 'Khula', sans-serif;
-  font-size: 16px;
-  color: var(--soft-text);
+    font-family: 'Khula', sans-serif;
+    font-size: 16px;
+    color: var(--soft-text);
 }
 
 .create-project-btn {
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 .feed-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 24px;
-  background-color: var(--white);
-  padding: 4px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: fit-content;
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background-color: var(--white);
+    padding: 4px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: fit-content;
 }
 
 .tab-button {
-  padding: 12px 24px;
-  border: none;
-  background: none;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--soft-text);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+    padding: 12px 24px;
+    border: none;
+    background: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--soft-text);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .tab-button:hover {
-  background-color: var(--accent-bg);
-  color: var(--main-text);
+    background-color: var(--accent-bg);
+    color: var(--main-text);
 }
 
 .tab-button.active {
-  background-color: var(--highlight);
-  color: var(--main-text);
-  font-weight: 600;
+    background-color: var(--highlight);
+    color: var(--main-text);
+    font-weight: 600;
 }
 
 .feed-container {
-  width: 100%;
+    width: 100%;
 }
 
 /* Feed Styles */
@@ -1187,11 +1192,11 @@ h1, h2, h3, h4, h5, h6 {
         grid-template-columns: 1fr;
         gap: 24px;
     }
-    
+
     .profile-sidebar {
         order: 2;
     }
-    
+
     .profile-main {
         order: 1;
     }
@@ -1224,12 +1229,12 @@ h1, h2, h3, h4, h5, h6 {
     .feed-sections {
         grid-template-columns: 1fr;
     }
-    
+
     .filter-controls {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .status-filters {
         justify-content: center;
     }
@@ -1252,13 +1257,13 @@ h1, h2, h3, h4, h5, h6 {
     .profile-content {
         padding: 20px 0;
     }
-    
+
     .section-header {
         flex-direction: column;
         gap: 16px;
         align-items: stretch;
     }
-    
+
     .profile-header {
         flex-direction: column;
         text-align: center;
@@ -1266,5 +1271,58 @@ h1, h2, h3, h4, h5, h6 {
 
     .create-btn {
         display: none;
+    }
+
+    /* Project Page Styles */
+    .project-page {
+        min-height: 100vh;
+        background-color: var(--accent-bg);
+    }
+
+    .project-content {
+        padding: 32px 0;
+    }
+
+    .project-layout {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .project-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+
+    .project-header h1 {
+        font-family: 'Inter', sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--main-text);
+        margin-bottom: 8px;
+    }
+
+    .placeholder-content ul {
+        padding-left: 20px;
+        margin-top: 16px;
+    }
+
+    .placeholder-content li {
+        font-family: 'Khula', sans-serif;
+        margin-bottom: 8px;
+        color: var(--soft-text);
+    }
+
+    /* Edit Profile Modal Styles */
+    .edit-profile-form {
+        width: 100%;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--fill-color);
     }
 }
