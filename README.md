@@ -20,5 +20,8 @@ docker run --rm -p 3000:3000 imy220-project
 # 3. Access website
 http://localhost:3000
 
+# 4. Stop containers
+docker stop $(docker ps -q)
+
 # 4. Clean docker after use
 docker rmi imy220-project
