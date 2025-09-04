@@ -68,7 +68,7 @@ const ProfilePage = () => {
         { id: 1, name: "Bonk", avatar: "B", status: "online" },
         { id: 2, name: "Squish", avatar: "S", status: "offline" },
         { id: 3, name: "Josh", avatar: "J", status: "online" },
-        { id: 4, name: "Eddie", avatar: "Eddie", status: "away" }
+        { id: 4, name: "Eddie", avatar: "E", status: "away" }
     ];
 
     const friendRequests = [

@@ -5,6 +5,7 @@ import SplashPage from './pages/SplashPage';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
 import ProjectPage from './pages/ProjectPage';
+import CreateProjectPage from './pages/CreateProjectPage';
 
 function App() {
     return (
@@ -15,6 +16,7 @@ function App() {
                     <Route path="/home" element={<HomePage />} />
                     <Route path="/profile/:userId" element={<ProfilePage />} />
                     <Route path="/project/:projectId" element={<ProjectPage />} />
+                    <Route path="/create-project" element={<CreateProjectPage />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </div>

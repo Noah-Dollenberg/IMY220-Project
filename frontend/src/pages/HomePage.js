@@ -19,13 +19,6 @@ const HomePage = () => {
                             <h1>Welcome back!</h1>
                             <p>Here's what's happening in your projects</p>
                         </div>
-
-                        <button
-                            className="btn btn-primary create-project-btn"
-                            onClick={() => setShowCreateProject(true)}
-                        >
-                            Create Project
-                        </button>
                     </div>
 
                     <div className="feed-tabs">

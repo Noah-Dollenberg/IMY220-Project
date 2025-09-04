@@ -26,9 +26,12 @@ const Header = () => {
                         >
                             Profile
                         </Link>
-                        <button className="btn btn-primary create-btn">
+                        <Link
+                            to="/create-project"
+                            className={`btn btn-primary create-btn ${location.pathname === '/create-project' ? 'active' : ''}`}
+                        >
                             Create Project
-                        </button>
+                        </Link>
                         <div className="user-profile">
                             <div className="profile-pic">
                                 PFP
