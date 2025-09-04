@@ -4,12 +4,10 @@ import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import ProjectPreview from '../components/ProjectPreview';
 import EditProfileModal from '../components/EditProfileModal';
-import CreateProjectModal from '../components/CreateProjectModal';
 
 const ProfilePage = () => {
     const { userId } = useParams();
     const [showEditProfile, setShowEditProfile] = useState(false);
-    const [showCreateProject, setShowCreateProject] = useState(false);
 
     const userData = {
         id: userId,
@@ -178,12 +176,6 @@ const ProfilePage = () => {
                                     <h2>Latest Projects</h2>
                                     <p>Projects you've created or contributed to</p>
                                 </div>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={() => setShowCreateProject(true)}
-                                >
-                                    Create Project
-                                </button>
                             </div>
 
                             <div className="projects-grid">
@@ -204,12 +196,6 @@ const ProfilePage = () => {
                 <EditProfileModal
                     user={userData}
                     onClose={() => setShowEditProfile(false)}
-                />
-            )}
-
-            {showCreateProject && (
-                <CreateProjectModal
-                    onClose={() => setShowCreateProject(false)}
                 />
             )}
         </div>

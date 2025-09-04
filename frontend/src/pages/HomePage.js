@@ -2,11 +2,9 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Feed from '../components/Feed';
-import CreateProjectModal from '../components/CreateProjectModal';
 
 const HomePage = () => {
     const [activeTab, setActiveTab] = useState('local');
-    const [showCreateProject, setShowCreateProject] = useState(false);
 
     return (
         <div className="home-page">
@@ -42,12 +40,6 @@ const HomePage = () => {
                     </div>
                 </div>
             </main>
-
-            {showCreateProject && (
-                <CreateProjectModal
-                    onClose={() => setShowCreateProject(false)}
-                />
-            )}
         </div>
     );
 };

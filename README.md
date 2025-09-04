@@ -5,7 +5,7 @@ I have cloned the file from GitHub to my machine.
 
 Now it was edited online
 
-# Run Code Locally#
+# Run Code Locally #
 # 1. npm start
 # 3. http://localhost:3000
 
