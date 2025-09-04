@@ -38,16 +38,16 @@ const SplashPage = () => {
     {
       id: 1,
       opacity: 0.2,
-      scale: 1.2,
+      scale: 2,
       rotation: 15,
       x: 10,
       y: 20,
-      speed: 0.3
+      speed: 1
     },
     {
       id: 2,
       opacity: 0.35,
-      scale: 0.8,
+      scale: 1,
       rotation: -25,
       x: 70,
       y: 60,
@@ -56,20 +56,20 @@ const SplashPage = () => {
     {
       id: 3,
       opacity: 0.25,
-      scale: 1.5,
+      scale: 3,
       rotation: 45,
       x: 80,
       y: 15,
-      speed: 0.4
+      speed: 1.5
     },
     {
       id: 4,
       opacity: 0.4,
-      scale: 0.6,
+      scale: 5,
       rotation: -10,
       x: 20,
       y: 75,
-      speed: 0.6
+      speed: 1.8
     }
   ];
 

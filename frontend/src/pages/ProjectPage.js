@@ -17,8 +17,8 @@ const ProjectPage = () => {
         contributors: 5,
         lastUpdate: "2 hours ago",
         owner: {
-            name: "John Developer",
-            avatar: "JD"
+            name: "User Personr",
+            avatar: "UP"
         },
         files: [
             { name: "index.js", size: "2.4 KB", modified: "2 hours ago" },
@@ -27,9 +27,9 @@ const ProjectPage = () => {
             { name: "src/components", type: "folder", items: 8, modified: "1 day ago" }
         ],
         messages: [
-            { id: 1, type: "check-in", user: "John Developer", message: "Fixed authentication bug", time: "2 hours ago" },
-            { id: 2, type: "check-out", user: "Sarah Coder", message: "Working on user interface updates", time: "4 hours ago" },
-            { id: 3, type: "check-in", user: "Mike Wilson", message: "Added new API endpoints", time: "1 day ago" }
+            { id: 1, type: "check-in", user: "David", message: "Fixed bug", time: "2 hours ago" },
+            { id: 2, type: "check-out", user: "Noah", message: "Working on user interface", time: "4 hours ago" },
+            { id: 3, type: "check-in", user: "Bonk", message: "Added new API", time: "1 day ago" }
         ]
     };
 
