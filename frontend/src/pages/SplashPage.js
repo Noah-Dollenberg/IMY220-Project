@@ -6,15 +6,17 @@ import SignUpForm from '../components/SignUpForm';
 const SplashPage = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
-  const [parallaxOffset, setParallaxOffset] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handleScroll = () => {
-      setParallaxOffset(window.pageYOffset);
+    const handleMouseMove = (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      setMousePosition({ x, y });
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const openLogin = () => {
@@ -32,27 +34,80 @@ const SplashPage = () => {
     setShowSignUp(false);
   };
 
+  const backgroundIcons = [
+    {
+      id: 1,
+      opacity: 0.2,
+      scale: 1.2,
+      rotation: 15,
+      x: 10,
+      y: 20,
+      speed: 0.3
+    },
+    {
+      id: 2,
+      opacity: 0.35,
+      scale: 0.8,
+      rotation: -25,
+      x: 70,
+      y: 60,
+      speed: 0.5
+    },
+    {
+      id: 3,
+      opacity: 0.25,
+      scale: 1.5,
+      rotation: 45,
+      x: 80,
+      y: 15,
+      speed: 0.4
+    },
+    {
+      id: 4,
+      opacity: 0.4,
+      scale: 0.6,
+      rotation: -10,
+      x: 20,
+      y: 75,
+      speed: 0.6
+    }
+  ];
+
   return (
     <div className="splash-page">
-      <div
-        className="code-background"
-        style={{
-          transform: `translateY(${parallaxOffset * 0.5}px)`
-        }}
-      >
-        <svg
-          width="800"
-          height="600"
-          viewBox="0 0 512 512"
-          className="code-symbol"
+      {backgroundIcons.map((icon) => (
+        <div
+          key={icon.id}
+          className="parallax-icon"
+          style={{
+            position: 'absolute',
+            left: `${icon.x}%`,
+            top: `${icon.y}%`,
+            opacity: icon.opacity,
+            transform: `
+              translate(
+                ${-mousePosition.x * icon.speed * 20}px,
+                ${-mousePosition.y * icon.speed * 20}px
+              )
+              scale(${icon.scale})
+              rotate(${icon.rotation}deg)
+            `,
+            transition: 'transform 0.3s ease-out',
+            pointerEvents: 'none',
+            zIndex: 1
+          }}
         >
-          <path
-            fill="#F5CB5C"
-            opacity="0.1"
-            d="M160 368L32 256l128-112 22.4 25.6L73.6 256l108.8 86.4L160 368zm192 0l-22.4-25.6L438.4 256 329.6 169.6L352 144l128 112-128 112zM320 96L192 416h-32L288 96h32z"
+          <img
+            src="/assets/images/backgroundIcon.png"
+            style={{
+              width: '120px',
+              height: '120px',
+              filter: 'blur(1px)'
+            }}
           />
-        </svg>
-      </div>
+        </div>
+      ))}
+
       <main className="splash-main">
         <div className="container">
           <div className="splash-content">
