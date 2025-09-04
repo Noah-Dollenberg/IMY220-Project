@@ -3,8 +3,9 @@
 	"version": "1.0.0",
 	"scripts": {
 		"clean": "rimraf frontend/public/bundle.js backend/dist",
-		"build": "npm run clean && webpack && babel backend/server.js --out-file backend/dist/server.js",
-		"start": "npm run build && node backend/dist/server.js",
+		"build": "npm run clean && webpack",
+		"start": "npm run build && node backend/server.js",
+		"start-dev": "npm run build && node backend/dist/server.js",
 		"watch": "webpack -w"
 	},
 	"dependencies": {

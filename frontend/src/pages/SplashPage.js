@@ -46,7 +46,7 @@ const SplashPage = () => {
     },
     {
       id: 2,
-      opacity: 0.35,
+      opacity: 0.1,
       scale: 1,
       rotation: -25,
       x: 70,
@@ -55,7 +55,7 @@ const SplashPage = () => {
     },
     {
       id: 3,
-      opacity: 0.25,
+      opacity: 0.3,
       scale: 3,
       rotation: 45,
       x: 80,
