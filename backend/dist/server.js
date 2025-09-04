@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({
   extended: true
 }));
-app.use(express["static"](path.join(__dirname, '../../../public')));
+app.use(express["static"](path.join(__dirname, '../../frontend/public')));
 app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -27,20 +27,20 @@ app.use(function (req, res, next) {
 });
 var dummyUsers = [{
   id: 1,
-  email: 'john@example.com',
+  email: 'noah@example.com',
   password: 'password123',
-  name: 'John Developer',
-  company: 'Tech Corp',
-  country: 'USA',
-  birthDate: '1990/01/15'
+  name: 'Noah Dollenberg',
+  company: 'NJD',
+  country: 'South Africa',
+  birthDate: '2005/09/05'
 }, {
   id: 2,
-  email: 'sarah@example.com',
-  password: 'password456',
-  name: 'Sarah Coder',
-  company: 'StartupXYZ',
-  country: 'Canada',
-  birthDate: '1992/05/22'
+  email: 'john@example.com',
+  password: 'password123',
+  name: 'John Doe',
+  company: 'JD Corp',
+  country: 'England',
+  birthDate: '2000/05/22'
 }];
 var generateToken = function generateToken(user) {
   return "token_".concat(user.id, "_").concat(Date.now());
@@ -191,25 +191,18 @@ app.get('/api/health', function (req, res) {
   });
 });
 app.get('*', function (req, res) {
-  res.sendFile(path.join(__dirname, '../../../public/index.html'));
+  res.sendFile(path.join(__dirname, '../../frontend/public/index.html'));
 });
 app.use(function (err, req, res, next) {
-  console.error(err.stack);
+  console.error('Error:', err);
   res.status(500).json({
     success: false,
     message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+    error: err.message
   });
 });
 console.log('Starting server...');
 console.log('Routes registered successfully');
 app.listen(PORT, function () {
-  console.log("Server is running on port ".concat(PORT));
-  console.log("Environment: ".concat(process.env.NODE_ENV || 'development'));
-  console.log('Available endpoints:');
-  console.log('  POST /api/auth/signup   - User registration');
-  console.log('  POST /api/auth/login    - User login');
-  console.log('  GET  /api/auth/me       - Get current user');
-  console.log('  POST /api/auth/logout   - User logout');
-  console.log('  GET  /api/health        - Health check');
+  console.log("SUCCESS! Server is running on port ".concat(PORT));
 });

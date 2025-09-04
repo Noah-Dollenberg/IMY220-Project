@@ -11,7 +11,7 @@ const Feed = ({ feedType = 'local' }) => {
         local: [
             {
                 id: 1,
-                name: "A's Project",
+                name: "Noah's Project",
                 description: "Latest message",
                 contributors: 4,
                 status: 'checked-in',
@@ -20,7 +20,7 @@ const Feed = ({ feedType = 'local' }) => {
             },
             {
                 id: 2,
-                name: "B's Project",
+                name: "Josh's Project",
                 description: "Latest message",
                 contributors: 3,
                 status: 'checked-out',
@@ -29,7 +29,7 @@ const Feed = ({ feedType = 'local' }) => {
             },
             {
                 id: 3,
-                name: "C's Project",
+                name: "Bonk's Project",
                 description: "Latest message",
                 contributors: 2,
                 status: 'checked-in',
@@ -38,7 +38,7 @@ const Feed = ({ feedType = 'local' }) => {
             },
             {
                 id: 4,
-                name: "D's Project",
+                name: "Squish's Project",
                 description: "Latest message",
                 contributors: 5,
                 status: 'checked-out',
@@ -49,7 +49,7 @@ const Feed = ({ feedType = 'local' }) => {
         global: [
             {
                 id: 5,
-                name: "I's Project",
+                name: "David's Project",
                 description: "Public project description",
                 contributors: 2000,
                 status: 'checked-in',
@@ -58,7 +58,7 @@ const Feed = ({ feedType = 'local' }) => {
             },
             {
                 id: 6,
-                name: "J's Project",
+                name: "Micheal's Project",
                 description: "Open source collaboration",
                 contributors: 1000,
                 status: 'checked-out',
@@ -67,7 +67,7 @@ const Feed = ({ feedType = 'local' }) => {
             },
             {
                 id: 7,
-                name: "K's Project",
+                name: "John's Project",
                 description: "Community driven development",
                 contributors: 6000,
                 status: 'checked-in',
@@ -76,7 +76,7 @@ const Feed = ({ feedType = 'local' }) => {
             },
             {
                 id: 8,
-                name: "L's Project",
+                name: "Bob's Project",
                 description: "Learning project for beginners",
                 contributors: 100,
                 status: 'checked-out',
