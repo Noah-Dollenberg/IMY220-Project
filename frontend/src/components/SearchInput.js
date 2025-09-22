@@ -1,42 +1,43 @@
 // NJ (Noah) Dollenberg u24596142 41
 import React, { useState, useEffect } from 'react';
+import { searchAPI } from '../services/api';
 
 const SearchInput = ({ onSearch, placeholder = "Search for project...", searchType = "projects" }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-
-    const dummySuggestions = {
-        projects: [
-            "React Todo App",
-            "Python Web Scraper",
-            "JavaScript Calculator",
-            "CSS Animation Library",
-            "Node.js API Server"
-        ],
-        users: [
-            "john.developer",
-            "sarah.coder",
-            "mike.engineer",
-            "lisa.designer",
-            "tom.architect"
-        ]
-    };
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (searchTerm.length > 1) {
-            const filtered = dummySuggestions[searchType]
-                .filter(item =>
-                    item.toLowerCase().includes(searchTerm.toLowerCase())
-                )
-                .slice(0, 5);
+        const fetchSuggestions = async () => {
+            if (searchTerm.length > 1) {
+                setLoading(true);
+                try {
+                    let results = [];
+                    if (searchType === 'projects') {
+                        const response = await searchAPI.projects(searchTerm);
+                        results = response.projects.slice(0, 5).map(p => p.name);
+                    } else if (searchType === 'users') {
+                        const response = await searchAPI.users(searchTerm);
+                        results = response.users.slice(0, 5).map(u => u.name);
+                    }
+                    setSuggestions(results);
+                    setShowSuggestions(true);
+                } catch (error) {
+                    console.error('Search suggestions error:', error);
+                    setSuggestions([]);
+                    setShowSuggestions(false);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+            }
+        };
 
-            setSuggestions(filtered);
-            setShowSuggestions(true);
-        } else {
-            setSuggestions([]);
-            setShowSuggestions(false);
-        }
+        const debounceTimer = setTimeout(fetchSuggestions, 300);
+        return () => clearTimeout(debounceTimer);
     }, [searchTerm, searchType]);
 
     const handleInputChange = (e) => {
@@ -98,18 +99,24 @@ const SearchInput = ({ onSearch, placeholder = "Search for project...", searchTy
                     </button>
                 </div>
 
-                {showSuggestions && suggestions.length > 0 && (
+                {showSuggestions && (
                     <div className="suggestions-dropdown">
-                        {suggestions.map((suggestion, index) => (
-                            <button
-                                key={index}
-                                type="button"
-                                className="suggestion-item"
-                                onClick={() => handleSuggestionClick(suggestion)}
-                            >
-                                {suggestion}
-                            </button>
-                        ))}
+                        {loading ? (
+                            <div className="suggestion-loading">Searching...</div>
+                        ) : suggestions.length > 0 ? (
+                            suggestions.map((suggestion, index) => (
+                                <button
+                                    key={index}
+                                    type="button"
+                                    className="suggestion-item"
+                                    onClick={() => handleSuggestionClick(suggestion)}
+                                >
+                                    {suggestion}
+                                </button>
+                            ))
+                        ) : searchTerm.length > 1 ? (
+                            <div className="suggestion-empty">No results found</div>
+                        ) : null}
                     </div>
                 )}
             </form>

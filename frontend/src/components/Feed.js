@@ -1,92 +1,39 @@
 // NJ (Noah) Dollenberg u24596142 41
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProjectPreview from './ProjectPreview';
+import { projectsAPI, activityAPI } from '../services/api';
 
 const Feed = ({ feedType = 'local' }) => {
+    const [projects, setProjects] = useState([]);
+    const [activities, setActivities] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('latest');
     const [filterBy, setFilterBy] = useState('all');
 
-    const dummyProjects = {
-        local: [
-            {
-                id: 1,
-                name: "Noah's Project",
-                description: "Latest message",
-                contributors: 4,
-                status: 'checked-in',
-                lastUpdate: '2 hours ago',
-                owner: { name: "User A", avatar: "A" }
-            },
-            {
-                id: 2,
-                name: "Josh's Project",
-                description: "Latest message",
-                contributors: 3,
-                status: 'checked-out',
-                lastUpdate: '1 day ago',
-                owner: { name: "User B", avatar: "B" }
-            },
-            {
-                id: 3,
-                name: "Bonk's Project",
-                description: "Latest message",
-                contributors: 2,
-                status: 'checked-in',
-                lastUpdate: '3 days ago',
-                owner: { name: "User C", avatar: "C" }
-            },
-            {
-                id: 4,
-                name: "Squish's Project",
-                description: "Latest message",
-                contributors: 5,
-                status: 'checked-out',
-                lastUpdate: '1 week ago',
-                owner: { name: "User D", avatar: "D" }
-            }
-        ],
-        global: [
-            {
-                id: 5,
-                name: "David's Project",
-                description: "Public project description",
-                contributors: 2000,
-                status: 'checked-in',
-                lastUpdate: '1 hour ago',
-                owner: { name: "User I", avatar: "I" }
-            },
-            {
-                id: 6,
-                name: "Micheal's Project",
-                description: "Open source collaboration",
-                contributors: 1000,
-                status: 'checked-out',
-                lastUpdate: '3 hours ago',
-                owner: { name: "User J", avatar: "J" }
-            },
-            {
-                id: 7,
-                name: "John's Project",
-                description: "Community driven development",
-                contributors: 6000,
-                status: 'checked-in',
-                lastUpdate: '6 hours ago',
-                owner: { name: "User K", avatar: "K" }
-            },
-            {
-                id: 8,
-                name: "Bob's Project",
-                description: "Learning project for beginners",
-                contributors: 100,
-                status: 'checked-out',
-                lastUpdate: '12 hours ago',
-                owner: { name: "User L", avatar: "L" }
-            }
-        ]
-    };
+    useEffect(() => {
+        fetchData();
+    }, [feedType]);
 
-    const projects = dummyProjects[feedType] || [];
+    const fetchData = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const [projectsResponse, activitiesResponse] = await Promise.all([
+                projectsAPI.getAll(),
+                activityAPI.getFeed(feedType)
+            ]);
+
+            setProjects(projectsResponse.projects || []);
+            setActivities(activitiesResponse.activities || []);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredProjects = projects
         .filter(project => {
@@ -96,21 +43,41 @@ const Feed = ({ feedType = 'local' }) => {
         })
         .sort((a, b) => {
             if (sortBy === 'contributors') {
-                return b.contributors - a.contributors;
+                return (b.members?.length || 0) - (a.members?.length || 0);
             }
-            return new Date(b.lastUpdate) - new Date(a.lastUpdate);
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
 
     const handleRefresh = () => {
-        console.log('Refreshing feed...');
+        fetchData();
     };
+
+    if (loading) {
+        return (
+            <div className="feed loading">
+                <div className="loading-message">Loading projects...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="feed error">
+                <div className="error-message">
+                    Error loading feed: {error}
+                    <button onClick={handleRefresh} className="btn btn-secondary">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="feed">
             <div className="feed-header">
                 <h2 className="feed-title">
-                    [{feedType === 'local' ? 'B' : 'B'}] {feedType.toUpperCase()} FEED
-                    <span className="feed-badge">PFP</span>
+                    [{feedType === 'local' ? 'L' : 'G'}] {feedType.toUpperCase()} FEED
                 </h2>
 
                 <div className="feed-controls">
@@ -160,31 +127,58 @@ const Feed = ({ feedType = 'local' }) => {
                 {feedType === 'local' && (
                     <div className="feed-sections">
                         <div className="available-projects">
-                            <h3>AVAILABLE PROJECTS</h3>
+                            <h3>AVAILABLE PROJECTS ({filteredProjects.length})</h3>
                             <div className="projects-list">
-                                {filteredProjects.map(project => (
-                                    <ProjectPreview
-                                        key={project.id}
-                                        project={project}
-                                        showActivity={false}
-                                    />
-                                ))}
+                                {filteredProjects.length > 0 ? (
+                                    filteredProjects.map(project => (
+                                        <ProjectPreview
+                                            key={project._id}
+                                            project={{
+                                                id: project._id,
+                                                name: project.name,
+                                                description: project.description,
+                                                contributors: project.members?.length || 0,
+                                                status: project.status,
+                                                lastUpdate: new Date(project.updatedAt).toLocaleDateString(),
+                                                owner: {
+                                                    name: project.ownerInfo?.name || 'Unknown',
+                                                    avatar: project.ownerInfo?.name?.charAt(0) || 'U'
+                                                }
+                                            }}
+                                            showActivity={false}
+                                        />
+                                    ))
+                                ) : (
+                                    <div className="empty-state">
+                                        <p>No projects found</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         <div className="activity-feed">
-                            <h3>ACTIVITY</h3>
+                            <h3>ACTIVITY ({activities.length})</h3>
                             <div className="activity-list">
-                                {filteredProjects.map(project => (
-                                    <div key={`activity-${project.id}`} className="activity-item">
-                                        <div className="activity-avatar">{project.owner.avatar}</div>
-                                        <div className="activity-content">
-                                            <strong>{project.name}</strong>
-                                            <p>{project.description}</p>
-                                            <span className="activity-time">{project.lastUpdate}</span>
+                                {activities.length > 0 ? (
+                                    activities.map(activity => (
+                                        <div key={activity._id} className="activity-item">
+                                            <div className="activity-avatar">
+                                                {activity.userInfo?.name?.charAt(0) || 'U'}
+                                            </div>
+                                            <div className="activity-content">
+                                                <strong>{activity.projectInfo?.name}</strong>
+                                                <p>{activity.message}</p>
+                                                <span className="activity-time">
+                                                    {new Date(activity.timestamp).toLocaleDateString()}
+                                                </span>
+                                            </div>
                                         </div>
+                                    ))
+                                ) : (
+                                    <div className="empty-state">
+                                        <p>No activity yet</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
                     </div>
@@ -192,15 +186,32 @@ const Feed = ({ feedType = 'local' }) => {
 
                 {feedType === 'global' && (
                     <div className="available-projects">
-                        <h3>AVAILABLE PROJECTS</h3>
+                        <h3>AVAILABLE PROJECTS ({filteredProjects.length})</h3>
                         <div className="projects-list">
-                            {filteredProjects.map(project => (
-                                <ProjectPreview
-                                    key={project.id}
-                                    project={project}
-                                    showContributors={true}
-                                />
-                            ))}
+                            {filteredProjects.length > 0 ? (
+                                filteredProjects.map(project => (
+                                    <ProjectPreview
+                                        key={project._id}
+                                        project={{
+                                            id: project._id,
+                                            name: project.name,
+                                            description: project.description,
+                                            contributors: project.members?.length || 0,
+                                            status: project.status,
+                                            lastUpdate: new Date(project.updatedAt).toLocaleDateString(),
+                                            owner: {
+                                                name: project.ownerInfo?.name || 'Unknown',
+                                                avatar: project.ownerInfo?.name?.charAt(0) || 'U'
+                                            }
+                                        }}
+                                        showContributors={true}
+                                    />
+                                ))
+                            ) : (
+                                <div className="empty-state">
+                                    <p>No projects found</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

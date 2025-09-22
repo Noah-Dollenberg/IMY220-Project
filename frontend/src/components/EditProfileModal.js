@@ -13,6 +13,7 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
 
     const [previewImage, setPreviewImage] = useState(user?.profilePicture || null);
     const [dragActive, setDragActive] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -73,12 +74,17 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (onSave) {
-            onSave(formData);
+        setSaving(true);
+
+        try {
+            await onSave(formData);
+        } catch (error) {
+            alert('Failed to save profile: ' + error.message);
+        } finally {
+            setSaving(false);
         }
-        onClose();
     };
 
     return (
@@ -100,7 +106,9 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
                                     <img src={previewImage} alt="Profile Preview" className="profile-preview" />
                                 ) : (
                                     <div className="profile-placeholder">
-                                        <span className="placeholder-text">No Image</span>
+                                        <span className="placeholder-text">
+                                            {formData.name?.charAt(0) || 'U'}
+                                        </span>
                                     </div>
                                 )}
                             </div>
@@ -208,11 +216,20 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
                     </div>
 
                     <div className="form-actions">
-                        <button type="button" className="btn btn-secondary" onClick={onClose}>
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={onClose}
+                            disabled={saving}
+                        >
                             Cancel
                         </button>
-                        <button type="submit" className="btn btn-primary">
-                            Save Changes
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={saving}
+                        >
+                            {saving ? 'Saving...' : 'Save Changes'}
                         </button>
                     </div>
                 </form>

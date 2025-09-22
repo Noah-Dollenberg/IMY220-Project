@@ -1,22 +1,74 @@
 // NJ (Noah) Dollenberg u24596142
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import SplashPage from './pages/SplashPage';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
 import ProjectPage from './pages/ProjectPage';
 import CreateProjectPage from './pages/CreateProjectPage';
+import { authAPI } from './services/api';
 
 function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState(null);
+
+    useEffect(() => {
+        checkAuthentication();
+    }, []);
+
+    const checkAuthentication = async () => {
+        const token = localStorage.getItem('userToken');
+        if (!token) {
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const response = await authAPI.getCurrentUser();
+            setCurrentUser(response.user);
+            setIsAuthenticated(true);
+        } catch (error) {
+            localStorage.removeItem('userToken');
+            localStorage.removeItem('userData');
+            setIsAuthenticated(false);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="loading-screen">
+                <div className="loading-spinner">Loading...</div>
+            </div>
+        );
+    }
+
     return (
         <BrowserRouter>
             <div className="app">
                 <Routes>
-                    <Route path="/" element={<SplashPage />} />
-                    <Route path="/home" element={<HomePage />} />
-                    <Route path="/profile/:userId" element={<ProfilePage />} />
-                    <Route path="/project/:projectId" element={<ProjectPage />} />
-                    <Route path="/create-project" element={<CreateProjectPage />} />
+                    <Route
+                        path="/"
+                        element={isAuthenticated ? <Navigate to="/home" replace /> : <SplashPage />}
+                    />
+                    <Route
+                        path="/home"
+                        element={isAuthenticated ? <HomePage currentUser={currentUser} /> : <Navigate to="/" replace />}
+                    />
+                    <Route
+                        path="/profile/:userId"
+                        element={isAuthenticated ? <ProfilePage currentUser={currentUser} /> : <Navigate to="/" replace />}
+                    />
+                    <Route
+                        path="/project/:projectId"
+                        element={isAuthenticated ? <ProjectPage currentUser={currentUser} /> : <Navigate to="/" replace />}
+                    />
+                    <Route
+                        path="/create-project"
+                        element={isAuthenticated ? <CreateProjectPage currentUser={currentUser} /> : <Navigate to="/" replace />}
+                    />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </div>

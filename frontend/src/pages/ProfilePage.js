@@ -1,82 +1,95 @@
 // NJ (Noah) Dollenberg u24596142 41
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import ProjectPreview from '../components/ProjectPreview';
 import EditProfileModal from '../components/EditProfileModal';
+import { usersAPI, projectsAPI, friendsAPI } from '../services/api';
 
-const ProfilePage = () => {
+const ProfilePage = ({ currentUser }) => {
     const { userId } = useParams();
+    const [profileUser, setProfileUser] = useState(null);
+    const [userProjects, setUserProjects] = useState([]);
+    const [friendRequests, setFriendRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [showEditProfile, setShowEditProfile] = useState(false);
 
-    const userData = {
-        id: userId,
-        name: "USER'S NAME",
-        email: "email@example.com",
-        birthDate: "2000/01/01",
-        company: "COMPANY",
-        country: "COUNTRY",
-        avatar: "PFP",
-        joinDate: "January 2024",
-        projectsCount: 12,
-        followersCount: 45,
-        followingCount: 38
+    const isOwnProfile = currentUser?._id === userId;
+
+    useEffect(() => {
+        fetchProfileData();
+    }, [userId]);
+
+    const fetchProfileData = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const [userResponse, projectsResponse] = await Promise.all([
+                usersAPI.getById(userId),
+                projectsAPI.getAll()
+            ]);
+
+            setProfileUser(userResponse.user);
+
+            const userOwnedProjects = projectsResponse.projects.filter(
+                project => project.owner.toString() === userId
+            );
+            setUserProjects(userOwnedProjects);
+
+            if (isOwnProfile) {
+                const friendRequestsResponse = await friendsAPI.getRequests();
+                setFriendRequests(friendRequestsResponse.requests);
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const userProjects = [
-        {
-            id: 1,
-            name: "Eddie's Project",
-            description: "A React-based web application for task management",
-            contributors: 3,
-            status: 'checked-in',
-            lastUpdate: '2 hours ago',
-            owner: { name: userData.name, avatar: userData.avatar }
-        },
-        {
-            id: 2,
-            name: "Squish's Project",
-            description: "Python data analysis tool for market research",
-            contributors: 5,
-            status: 'checked-out',
-            lastUpdate: '1 day ago',
-            owner: { name: userData.name, avatar: userData.avatar }
-        },
-        {
-            id: 3,
-            name: "Bonk's Project",
-            description: "Mobile app for fitness tracking using React Native",
-            contributors: 2,
-            status: 'checked-in',
-            lastUpdate: '3 days ago',
-            owner: { name: userData.name, avatar: userData.avatar }
-        },
-        {
-            id: 4,
-            name: "Josh's Project",
-            description: "E-commerce platform built with Node.js and MongoDB",
-            contributors: 8,
-            status: 'checked-out',
-            lastUpdate: '1 week ago',
-            owner: { name: userData.name, avatar: userData.avatar }
+    const handleEditProfile = async (updatedData) => {
+        try {
+            const response = await usersAPI.update(userId, updatedData);
+            setProfileUser(response.user);
+            setShowEditProfile(false);
+        } catch (err) {
+            alert('Failed to update profile: ' + err.message);
         }
-    ];
+    };
 
-    const friends = [
-        { id: 1, name: "Bonk", avatar: "B", status: "online" },
-        { id: 2, name: "Squish", avatar: "S", status: "offline" },
-        { id: 3, name: "Josh", avatar: "J", status: "online" },
-        { id: 4, name: "Eddie", avatar: "E", status: "away" }
-    ];
+    const handleAcceptFriend = async (requestId) => {
+        try {
+            await friendsAPI.acceptRequest(requestId);
+            setFriendRequests(prev => prev.filter(req => req._id !== requestId));
+            fetchProfileData();
+        } catch (err) {
+            alert('Failed to accept friend request: ' + err.message);
+        }
+    };
 
-    const friendRequests = [
-        { id: 1, name: "David", avatar: "D", mutualFriends: 5 },
-        { id: 2, name: "Micheal", avatar: "M", mutualFriends: 3 }
-    ];
+    if (loading) {
+        return (
+            <div className="profile-page">
+                <Header currentUser={currentUser} />
+                <div className="loading-message">Loading profile...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="profile-page">
+                <Header currentUser={currentUser} />
+                <div className="error-message">Error loading profile: {error}</div>
+            </div>
+        );
+    }
 
     return (
         <div className="profile-page">
-            <Header />
+            <Header currentUser={currentUser} />
 
             <main className="profile-content">
                 <div className="container">
@@ -85,107 +98,142 @@ const ProfilePage = () => {
                             <div className="profile-card">
                                 <div className="profile-header">
                                     <div className="profile-avatar-large">
-                                        {userData.avatar}
+                                        {profileUser?.name?.charAt(0) || 'U'}
                                     </div>
                                     <div className="profile-info">
-                                        <h1 className="profile-name">{userData.name}</h1>
-                                        <button
-                                            className="btn btn-secondary edit-profile-btn"
-                                            onClick={() => setShowEditProfile(true)}
-                                        >
-                                            Edit Profile
-                                        </button>
+                                        <h1 className="profile-name">{profileUser?.name || 'Unknown User'}</h1>
+                                        {isOwnProfile && (
+                                            <button
+                                                className="btn btn-secondary edit-profile-btn"
+                                                onClick={() => setShowEditProfile(true)}
+                                            >
+                                                Edit Profile
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
                                 <div className="profile-details">
                                     <div className="detail-item">
                                         <span className="detail-icon">📧</span>
-                                        <span className="detail-text">{userData.email}</span>
+                                        <span className="detail-text">{profileUser?.email}</span>
                                     </div>
-                                    <div className="detail-item">
-                                        <span className="detail-icon">🎂</span>
-                                        <span className="detail-text">{userData.birthDate}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-icon">🏢</span>
-                                        <span className="detail-text">{userData.company}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-icon">🌍</span>
-                                        <span className="detail-text">{userData.country}</span>
-                                    </div>
+                                    {profileUser?.birthDate && (
+                                        <div className="detail-item">
+                                            <span className="detail-icon">🎂</span>
+                                            <span className="detail-text">{profileUser.birthDate}</span>
+                                        </div>
+                                    )}
+                                    {profileUser?.company && (
+                                        <div className="detail-item">
+                                            <span className="detail-icon">🏢</span>
+                                            <span className="detail-text">{profileUser.company}</span>
+                                        </div>
+                                    )}
+                                    {profileUser?.country && (
+                                        <div className="detail-item">
+                                            <span className="detail-icon">🌍</span>
+                                            <span className="detail-text">{profileUser.country}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="profile-stats">
                                     <div className="stat-item">
-                                        <span className="stat-number">{userData.projectsCount}</span>
+                                        <span className="stat-number">{userProjects.length}</span>
                                         <span className="stat-label">Projects</span>
                                     </div>
                                     <div className="stat-item">
-                                        <span className="stat-number">{userData.followersCount}</span>
-                                        <span className="stat-label">Followers</span>
+                                        <span className="stat-number">{profileUser?.friends?.length || 0}</span>
+                                        <span className="stat-label">Friends</span>
                                     </div>
                                     <div className="stat-item">
-                                        <span className="stat-number">{userData.followingCount}</span>
-                                        <span className="stat-label">Following</span>
+                                        <span className="stat-number">
+                                            {new Date(profileUser?.createdAt).getFullYear()}
+                                        </span>
+                                        <span className="stat-label">Joined</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="friends-section">
-                                <h3>Friends</h3>
-                                <div className="friends-list">
-                                    {friends.map(friend => (
-                                        <div key={friend.id} className="friend-item">
-                                            <div className="friend-avatar">
-                                                {friend.avatar}
-                                                <div className={`status-indicator ${friend.status}`}></div>
-                                            </div>
-                                            <span className="friend-name">{friend.name}</span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {friendRequests.length > 0 && (
+                            {isOwnProfile && friendRequests.length > 0 && (
+                                <div className="friend-requests-section">
+                                    <h3>Friend Requests ({friendRequests.length})</h3>
                                     <div className="friend-requests">
-                                        <h4>Friend Requests</h4>
                                         {friendRequests.map(request => (
-                                            <div key={request.id} className="request-item">
+                                            <div key={request._id} className="request-item">
                                                 <div className="request-info">
-                                                    <div className="friend-avatar">{request.avatar}</div>
+                                                    <div className="friend-avatar">
+                                                        {request.requesterInfo?.name?.charAt(0) || 'U'}
+                                                    </div>
                                                     <div className="request-details">
-                                                        <span className="friend-name">{request.name}</span>
-                                                        <span className="mutual-friends">{request.mutualFriends} mutual friends</span>
+                                                        <span className="friend-name">
+                                                            {request.requesterInfo?.name || 'Unknown'}
+                                                        </span>
+                                                        <span className="friend-email">
+                                                            {request.requesterInfo?.email}
+                                                        </span>
                                                     </div>
                                                 </div>
                                                 <div className="request-actions">
-                                                    <button className="btn-small btn-primary">Add</button>
-                                                    <button className="btn-small btn-secondary">Decline</button>
+                                                    <button
+                                                        className="btn-small btn-primary"
+                                                        onClick={() => handleAcceptFriend(request._id)}
+                                                    >
+                                                        Accept
+                                                    </button>
+                                                    <button className="btn-small btn-secondary">
+                                                        Decline
+                                                    </button>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="profile-main">
                             <div className="section-header">
                                 <div>
-                                    <h2>Latest Projects</h2>
-                                    <p>Projects you've created or contributed to</p>
+                                    <h2>Projects ({userProjects.length})</h2>
+                                    <p>Projects {isOwnProfile ? "you've" : `${profileUser?.name} has`} created</p>
                                 </div>
                             </div>
 
                             <div className="projects-grid">
-                                {userProjects.map(project => (
-                                    <ProjectPreview
-                                        key={project.id}
-                                        project={project}
-                                        showContributors={true}
-                                    />
-                                ))}
+                                {userProjects.length > 0 ? (
+                                    userProjects.map(project => (
+                                        <ProjectPreview
+                                            key={project._id}
+                                            project={{
+                                                id: project._id,
+                                                name: project.name,
+                                                description: project.description,
+                                                contributors: project.members?.length || 0,
+                                                status: project.status,
+                                                lastUpdate: new Date(project.updatedAt).toLocaleDateString(),
+                                                owner: {
+                                                    name: profileUser.name,
+                                                    avatar: profileUser.name?.charAt(0) || 'U'
+                                                }
+                                            }}
+                                            showContributors={true}
+                                        />
+                                    ))
+                                ) : (
+                                    <div className="empty-state">
+                                        <p>No projects yet</p>
+                                        {isOwnProfile && (
+                                            <button
+                                                className="btn btn-primary"
+                                                onClick={() => window.location.href = '/create-project'}
+                                            >
+                                                Create Your First Project
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -194,8 +242,9 @@ const ProfilePage = () => {
 
             {showEditProfile && (
                 <EditProfileModal
-                    user={userData}
+                    user={profileUser}
                     onClose={() => setShowEditProfile(false)}
+                    onSave={handleEditProfile}
                 />
             )}
         </div>

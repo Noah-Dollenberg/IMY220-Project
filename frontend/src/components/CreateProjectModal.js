@@ -1,18 +1,23 @@
 // u24596142 NJ (Noah) Dollenberg 41
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Header from '../components/Header';
+import { projectsAPI } from '../services/api';
 
-const CreateProjectModal = ({ onClose, onSubmit }) => {
+const CreateProjectPage = ({ currentUser }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     language: 'JavaScript',
     version: '1.0.0',
-    isPublic: true,
-    owners: 'me'
+    isPublic: true
   });
-  const [errors, setErrors] = useState({});
-  const [dragActive, setDragActive] = useState(false);
+
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [dragActive, setDragActive] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -93,25 +98,33 @@ const CreateProjectModal = ({ onClose, onSubmit }) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    const projectData = {
-      ...formData,
-      files: uploadedFiles,
-      createdAt: new Date().toISOString()
-    };
+    setIsSubmitting(true);
 
-    if (onSubmit) {
-      onSubmit(projectData);
-    } else {
-      console.log('Creating project:', projectData);
+    try {
+      const projectData = {
+        name: formData.name,
+        description: formData.description,
+        language: formData.language,
+        version: formData.version,
+        isPublic: formData.isPublic,
+        files: uploadedFiles.map(file => file.name)
+      };
+
+      const response = await projectsAPI.create(projectData);
+
       alert('Project created successfully!');
-      onClose();
+      navigate('/home');
+    } catch (error) {
+      setErrors({ submit: error.message || 'Failed to create project' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -302,13 +315,26 @@ const CreateProjectModal = ({ onClose, onSubmit }) => {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-large"
+              onClick={() => navigate('/home')}
+              disabled={isSubmitting}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
-              Create Project
+            <button
+              type="submit"
+              className="btn btn-primary btn-large"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Creating Project...' : 'Create Project'}
             </button>
           </div>
+
+          {errors.submit && (
+            <div className="error-message submit-error">{errors.submit}</div>
+          )}
         </form>
       </div>
     </div>
