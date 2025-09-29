@@ -6,7 +6,7 @@ import ProjectPreview from '../components/ProjectPreview';
 import EditProfileModal from '../components/EditProfileModal';
 import { usersAPI, projectsAPI, friendsAPI } from '../services/api';
 
-const ProfilePage = ({ currentUser }) => {
+const ProfilePage = ({ currentUser, onLogout }) => {
     const { userId } = useParams();
     const [profileUser, setProfileUser] = useState(null);
     const [userProjects, setUserProjects] = useState([]);
@@ -72,7 +72,7 @@ const ProfilePage = ({ currentUser }) => {
     if (loading) {
         return (
             <div className="profile-page">
-                <Header currentUser={currentUser} />
+                <Header currentUser={currentUser} onLogout={onLogout} />
                 <div className="loading-message">Loading profile...</div>
             </div>
         );
@@ -81,7 +81,7 @@ const ProfilePage = ({ currentUser }) => {
     if (error) {
         return (
             <div className="profile-page">
-                <Header currentUser={currentUser} />
+                <Header currentUser={currentUser} onLogout={onLogout} />
                 <div className="error-message">Error loading profile: {error}</div>
             </div>
         );
@@ -89,7 +89,7 @@ const ProfilePage = ({ currentUser }) => {
 
     return (
         <div className="profile-page">
-            <Header currentUser={currentUser} />
+            <Header currentUser={currentUser} onLogout={onLogout} />
 
             <main className="profile-content">
                 <div className="container">

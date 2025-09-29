@@ -194,6 +194,14 @@ app.post('/api/auth/logout', (req, res) => {
 app.get('/api/users/:id', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID format'
+            });
+        }
+        
         const user = await db.collection('users').findOne({ _id: new ObjectId(id) });
 
         if (!user) {
@@ -220,6 +228,13 @@ app.get('/api/users/:id', checkUser, async (req, res) => {
 app.put('/api/users/:id', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID format'
+            });
+        }
 
         if (req.user._id.toString() !== id) {
             return res.status(403).json({
@@ -404,6 +419,14 @@ app.get('/api/activity/:feedType', checkUser, async (req, res) => {
 app.post('/api/projects/:id/checkout', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID format'
+            });
+        }
+        
         const project = await db.collection('projects').findOne({ _id: new ObjectId(id) });
 
         if (!project) {
@@ -472,6 +495,13 @@ app.post('/api/projects/:id/checkin', checkUser, async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Check-in message and version are required'
+            });
+        }
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID format'
             });
         }
 
@@ -782,6 +812,14 @@ app.get('/api/search/projects', checkUser, async (req, res) => {
 app.get('/api/projects/:id', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID format'
+            });
+        }
+        
         const project = await db.collection('projects').findOne({ _id: new ObjectId(id) });
 
         if (!project) {

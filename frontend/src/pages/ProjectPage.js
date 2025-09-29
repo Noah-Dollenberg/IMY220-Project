@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import { projectsAPI } from '../services/api';
 
-const ProjectPage = ({ currentUser }) => {
+const ProjectPage = ({ currentUser, onLogout }) => {
     const { projectId } = useParams();
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -91,7 +91,7 @@ const ProjectPage = ({ currentUser }) => {
     if (loading) {
         return (
             <div className="project-page">
-                <Header currentUser={currentUser} />
+                <Header currentUser={currentUser} onLogout={onLogout} />
                 <div className="loading-message">Loading project...</div>
             </div>
         );
@@ -100,7 +100,7 @@ const ProjectPage = ({ currentUser }) => {
     if (error) {
         return (
             <div className="project-page">
-                <Header currentUser={currentUser} />
+                <Header currentUser={currentUser} onLogout={onLogout} />
                 <div className="error-message">Error loading project: {error}</div>
             </div>
         );
@@ -290,7 +290,7 @@ const ProjectPage = ({ currentUser }) => {
 
     return (
         <div className="project-page">
-            <Header currentUser={currentUser} />
+            <Header currentUser={currentUser} onLogout={onLogout} />
 
             <main className="project-content">
                 <div className="container">

@@ -29,12 +29,17 @@ function App() {
             setCurrentUser(response.user);
             setIsAuthenticated(true);
         } catch (error) {
-            localStorage.removeItem('userToken');
-            localStorage.removeItem('userData');
-            setIsAuthenticated(false);
+            handleLogout();
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('userData');
+        setIsAuthenticated(false);
+        setCurrentUser(null);
     };
 
     if (isLoading) {
@@ -55,19 +60,19 @@ function App() {
                     />
                     <Route
                         path="/home"
-                        element={isAuthenticated ? <HomePage currentUser={currentUser} /> : <Navigate to="/" replace />}
+                        element={isAuthenticated ? <HomePage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" replace />}
                     />
                     <Route
                         path="/profile/:userId"
-                        element={isAuthenticated ? <ProfilePage currentUser={currentUser} /> : <Navigate to="/" replace />}
+                        element={isAuthenticated ? <ProfilePage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" replace />}
                     />
                     <Route
                         path="/project/:projectId"
-                        element={isAuthenticated ? <ProjectPage currentUser={currentUser} /> : <Navigate to="/" replace />}
+                        element={isAuthenticated ? <ProjectPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" replace />}
                     />
                     <Route
                         path="/create-project"
-                        element={isAuthenticated ? <CreateProjectPage currentUser={currentUser} /> : <Navigate to="/" replace />}
+                        element={isAuthenticated ? <CreateProjectPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" replace />}
                     />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

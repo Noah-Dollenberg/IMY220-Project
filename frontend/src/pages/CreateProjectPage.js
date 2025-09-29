@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 
-const CreateProjectPage = () => {
+const CreateProjectPage = ({ currentUser, onLogout }) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '',
@@ -126,7 +126,7 @@ const CreateProjectPage = () => {
 
     return (
         <div className="create-project-page">
-            <Header />
+            <Header currentUser={currentUser} onLogout={onLogout} />
             <main className="main-content">
                 <div className="container">
                     <div className="create-project-container">

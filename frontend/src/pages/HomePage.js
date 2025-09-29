@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import Feed from '../components/Feed';
 
-const HomePage = () => {
+const HomePage = ({ currentUser, onLogout }) => {
     const [activeTab, setActiveTab] = useState('local');
 
     return (
         <div className="home-page">
-            <Header />
+            <Header currentUser={currentUser} onLogout={onLogout} />
 
             <main className="home-content">
                 <div className="container">

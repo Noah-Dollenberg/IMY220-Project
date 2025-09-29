@@ -3,13 +3,14 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
 
-const Header = ({ currentUser }) => {
+const Header = ({ currentUser, onLogout }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [showUserMenu, setShowUserMenu] = useState(false);
 
     const handleLogout = () => {
         authAPI.logout();
+        if (onLogout) onLogout();
         navigate('/');
     };
 
@@ -48,15 +49,7 @@ const Header = ({ currentUser }) => {
                                 <div className="user-menu">
                                     <div className="user-info">
                                         <span className="user-name">{currentUser?.name || 'User'}</span>
-                                        <span className="user-email">{currentUser?.email}</span>
                                     </div>
-                                    <hr />
-                                    <button onClick={() => {
-                                        setShowUserMenu(false);
-                                        navigate(`/profile/${currentUser?._id}`);
-                                    }}>
-                                        View Profile
-                                    </button>
                                     <button onClick={handleLogout}>
                                         Logout
                                     </button>

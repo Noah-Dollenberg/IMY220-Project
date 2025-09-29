@@ -320,6 +320,7 @@ h6 {
 
 .user-profile {
     margin-left: 8px;
+    position: relative;
 }
 
 .profile-pic {
@@ -2044,13 +2045,14 @@ h6 {
         border: 1px solid #ddd;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        min-width: 200px;
+        min-width: 160px;
         z-index: 1000;
         padding: 0.5rem 0;
+        margin-top: 8px;
     }
 
     .user-menu .user-info {
-        padding: 0.75rem 1rem;
+        padding: 0.5rem 1rem;
         border-bottom: 1px solid #eee;
     }
 
@@ -2058,6 +2060,7 @@ h6 {
         display: block;
         font-weight: 600;
         color: #333;
+        font-size: 14px;
     }
 
     .user-menu .user-email {
