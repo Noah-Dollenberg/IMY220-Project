@@ -191,6 +191,42 @@ app.post('/api/auth/logout', (req, res) => {
     });
 });
 
+app.get('/api/users/:id/picture', checkUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID format'
+            });
+        }
+        
+        const user = await db.collection('users').findOne(
+            { _id: new ObjectId(id) },
+            { projection: { profilePicture: 1 } }
+        );
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            profilePicture: user.profilePicture || null
+        });
+    } catch (error) {
+        console.error('Get user picture error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching user picture'
+        });
+    }
+});
+
 app.get('/api/users/:id', checkUser, async (req, res) => {
     try {
         const { id } = req.params;

@@ -25,14 +25,45 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
 
     const handleImageUpload = (file) => {
         if (file && file.type.startsWith('image/')) {
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Image must be smaller than 10MB');
+                return;
+            }
+            
             const reader = new FileReader();
             reader.onload = (e) => {
-                const imageUrl = e.target.result;
-                setPreviewImage(imageUrl);
-                setFormData(prev => ({
-                    ...prev,
-                    profilePicture: imageUrl
-                }));
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const maxSize = 150;
+                    let { width, height } = img;
+                    
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = (height * maxSize) / width;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = (width * maxSize) / height;
+                            height = maxSize;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 1);
+                    setPreviewImage(compressedDataUrl);
+                    setFormData(prev => ({
+                        ...prev,
+                        profilePicture: compressedDataUrl
+                    }));
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }

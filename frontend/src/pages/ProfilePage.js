@@ -98,7 +98,17 @@ const ProfilePage = ({ currentUser, onLogout }) => {
                             <div className="profile-card">
                                 <div className="profile-header">
                                     <div className="profile-avatar-large">
-                                        {profileUser?.name?.charAt(0) || 'U'}
+                                        {profileUser?.profilePicture ? (
+                                            <img 
+                                                src={profileUser.profilePicture} 
+                                                alt="Profile" 
+                                                className="avatar-image"
+                                            />
+                                        ) : (
+                                            <span className="avatar-text">
+                                                {profileUser?.name?.charAt(0) || 'U'}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="profile-info">
                                         <h1 className="profile-name">{profileUser?.name || 'Unknown User'}</h1>

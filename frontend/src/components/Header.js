@@ -43,7 +43,17 @@ const Header = ({ currentUser, onLogout }) => {
                         </Link>
                         <div className="user-profile" onClick={() => setShowUserMenu(!showUserMenu)}>
                             <div className="profile-pic">
-                                {currentUser?.name?.charAt(0) || 'U'}
+                                {currentUser?.profilePicture ? (
+                                    <img 
+                                        src={currentUser.profilePicture} 
+                                        alt="Profile" 
+                                        className="profile-pic-image"
+                                    />
+                                ) : (
+                                    <span className="profile-pic-text">
+                                        {currentUser?.name?.charAt(0) || 'U'}
+                                    </span>
+                                )}
                             </div>
                             {showUserMenu && (
                                 <div className="user-menu">
