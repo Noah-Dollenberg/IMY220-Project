@@ -36,6 +36,12 @@ const Header = ({ currentUser, onLogout }) => {
                             Profile
                         </Link>
                         <Link
+                            to="/search"
+                            className={`nav-link ${location.pathname === '/search' ? 'active' : ''}`}
+                        >
+                            Search
+                        </Link>
+                        <Link
                             to="/create-project"
                             className={`btn btn-primary create-btn ${location.pathname === '/create-project' ? 'active' : ''}`}
                         >
@@ -50,9 +56,7 @@ const Header = ({ currentUser, onLogout }) => {
                                         className="profile-pic-image"
                                     />
                                 ) : (
-                                    <span className="profile-pic-text">
-                                        {currentUser?.name?.charAt(0) || 'U'}
-                                    </span>
+                                    <div className="default-avatar">👤</div>
                                 )}
                             </div>
                             {showUserMenu && (

@@ -191,6 +191,63 @@ app.post('/api/auth/logout', (req, res) => {
     });
 });
 
+app.get('/api/users', checkUser, async (req, res) => {
+    try {
+        const users = await db.collection('users').find({}).toArray();
+        const usersWithoutPasswords = users.map(user => {
+            const { password, ...userWithoutPassword } = user;
+            return userWithoutPassword;
+        });
+
+        res.json({
+            success: true,
+            users: usersWithoutPasswords
+        });
+    } catch (error) {
+        console.error('Get all users error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching users'
+        });
+    }
+});
+
+app.get('/api/users/search', checkUser, async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q || q.trim().length < 2) {
+            return res.status(400).json({
+                success: false,
+                message: 'Search query must be at least 2 characters'
+            });
+        }
+
+        const searchRegex = new RegExp(q.trim(), 'i');
+        const users = await db.collection('users').find({
+            $or: [
+                { name: searchRegex },
+                { email: searchRegex }
+            ]
+        }).limit(20).toArray();
+
+        const usersWithoutPasswords = users.map(user => {
+            const { password, ...userWithoutPassword } = user;
+            return userWithoutPassword;
+        });
+
+        res.json({
+            success: true,
+            users: usersWithoutPasswords
+        });
+    } catch (error) {
+        console.error('Search users error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error searching users'
+        });
+    }
+});
+
 app.get('/api/users/:id/picture', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -594,6 +651,32 @@ app.post('/api/projects/:id/checkin', checkUser, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error checking in project'
+        });
+    }
+});
+
+app.post('/api/friends/decline', checkUser, async (req, res) => {
+    try {
+        const { requestId } = req.body;
+        
+        if (!ObjectId.isValid(requestId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid request ID format'
+            });
+        }
+
+        await db.collection('friendRequests').deleteOne({ _id: new ObjectId(requestId) });
+
+        res.json({
+            success: true,
+            message: 'Friend request declined'
+        });
+    } catch (error) {
+        console.error('Decline friend request error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error declining friend request'
         });
     }
 });

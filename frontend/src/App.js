@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
 import ProjectPage from './pages/ProjectPage';
 import CreateProjectPage from './pages/CreateProjectPage';
+import SearchPage from './pages/SearchPage';
 import { authAPI } from './services/api';
 
 function App() {
@@ -73,6 +74,10 @@ function App() {
                     <Route
                         path="/create-project"
                         element={isAuthenticated ? <CreateProjectPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" replace />}
+                    />
+                    <Route
+                        path="/search"
+                        element={isAuthenticated ? <SearchPage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" replace />}
                     />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

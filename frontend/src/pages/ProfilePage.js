@@ -39,8 +39,13 @@ const ProfilePage = ({ currentUser, onLogout }) => {
             setUserProjects(userOwnedProjects);
 
             if (isOwnProfile) {
-                const friendRequestsResponse = await friendsAPI.getRequests();
-                setFriendRequests(friendRequestsResponse.requests);
+                try {
+                    const friendRequestsResponse = await friendsAPI.getRequests();
+                    setFriendRequests(friendRequestsResponse.requests || []);
+                } catch (err) {
+                    console.error('Failed to load friend requests:', err);
+                    setFriendRequests([]);
+                }
             }
         } catch (err) {
             setError(err.message);
@@ -66,6 +71,15 @@ const ProfilePage = ({ currentUser, onLogout }) => {
             fetchProfileData();
         } catch (err) {
             alert('Failed to accept friend request: ' + err.message);
+        }
+    };
+
+    const handleDeclineFriend = async (requestId) => {
+        try {
+            await friendsAPI.declineRequest(requestId);
+            setFriendRequests(prev => prev.filter(req => req._id !== requestId));
+        } catch (err) {
+            alert('Failed to decline friend request: ' + err.message);
         }
     };
 
@@ -105,9 +119,7 @@ const ProfilePage = ({ currentUser, onLogout }) => {
                                                 className="avatar-image"
                                             />
                                         ) : (
-                                            <span className="avatar-text">
-                                                {profileUser?.name?.charAt(0) || 'U'}
-                                            </span>
+                                            <div className="default-avatar">👤</div>
                                         )}
                                     </div>
                                     <div className="profile-info">
@@ -174,7 +186,11 @@ const ProfilePage = ({ currentUser, onLogout }) => {
                                             <div key={request._id} className="request-item">
                                                 <div className="request-info">
                                                     <div className="friend-avatar">
-                                                        {request.requesterInfo?.name?.charAt(0) || 'U'}
+                                                        {request.requesterInfo?.profilePicture ? (
+                                                            <img src={request.requesterInfo.profilePicture} alt="Profile" className="avatar-image" />
+                                                        ) : (
+                                                            <div className="default-avatar">👤</div>
+                                                        )}
                                                     </div>
                                                     <div className="request-details">
                                                         <span className="friend-name">
@@ -192,7 +208,10 @@ const ProfilePage = ({ currentUser, onLogout }) => {
                                                     >
                                                         Accept
                                                     </button>
-                                                    <button className="btn-small btn-secondary">
+                                                    <button 
+                                                        className="btn-small btn-secondary"
+                                                        onClick={() => handleDeclineFriend(request._id)}
+                                                    >
                                                         Decline
                                                     </button>
                                                 </div>
@@ -201,6 +220,39 @@ const ProfilePage = ({ currentUser, onLogout }) => {
                                     </div>
                                 </div>
                             )}
+
+                            <div className="friends-section">
+                                <h3>Friends ({profileUser?.friends?.length || 0})</h3>
+                                <div className="friends-list">
+                                    {profileUser?.friends?.length > 0 ? (
+                                        profileUser.friends.map(friend => (
+                                            <div key={friend._id} className="friend-item">
+                                                <div className="friend-avatar">
+                                                    {friend.profilePicture ? (
+                                                        <img src={friend.profilePicture} alt="Profile" className="avatar-image" />
+                                                    ) : (
+                                                        <div className="default-avatar">👤</div>
+                                                    )}
+                                                </div>
+                                                <div className="friend-details">
+                                                    <span className="friend-name">{friend.name}</span>
+                                                    <span className="friend-email">{friend.email}</span>
+                                                </div>
+                                                <button 
+                                                    className="btn-small btn-secondary"
+                                                    onClick={() => window.location.href = `/profile/${friend._id}`}
+                                                >
+                                                    View Profile
+                                                </button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="empty-state">
+                                            <p>No friends yet</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="profile-main">

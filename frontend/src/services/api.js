@@ -122,6 +122,20 @@ export const searchAPI = {
 };
 
 export const usersAPI = {
+    getAll: async () => {
+        const response = await fetch(`${API_BASE_URL}/api/users`, {
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
+    },
+
+    search: async (query) => {
+        const response = await fetch(`${API_BASE_URL}/api/users/search?q=${encodeURIComponent(query)}`, {
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
+    },
+
     getById: async (id) => {
         const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
             headers: getAuthHeaders()
@@ -151,6 +165,15 @@ export const friendsAPI = {
 
     acceptRequest: async (requestId) => {
         const response = await fetch(`${API_BASE_URL}/api/friends/accept`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ requestId })
+        });
+        return handleResponse(response);
+    },
+
+    declineRequest: async (requestId) => {
+        const response = await fetch(`${API_BASE_URL}/api/friends/decline`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify({ requestId })
