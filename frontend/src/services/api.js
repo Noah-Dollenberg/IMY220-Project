@@ -184,6 +184,13 @@ export const usersAPI = {
             body: JSON.stringify(userData)
         });
         return handleResponse(response);
+    },
+
+    getProjects: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/api/users/${id}/projects`, {
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
     }
 };
 

@@ -109,6 +109,7 @@ app.post('/api/auth/signup', async (req, res) => {
             friends: [],
             friendRequests: { sent: [], received: [] },
             projectInvitations: { sent: [], received: [] },
+            projects: [],
             createdAt: new Date()
         };
 
@@ -428,6 +429,12 @@ app.post('/api/projects', checkUser, async (req, res) => {
         };
 
         const result = await db.collection('projects').insertOne(newProject);
+
+        // Add project to user's projects array
+        await db.collection('users').updateOne(
+            { _id: req.user._id },
+            { $addToSet: { projects: result.insertedId } }
+        );
 
         const checkIn = {
             projectId: result.insertedId,
@@ -1147,9 +1154,13 @@ app.post('/api/projects/invitations/accept', checkUser, async (req, res) => {
             { $addToSet: { members: req.user._id } }
         );
 
+        // Add project to user's projects array
         await db.collection('users').updateOne(
             { _id: req.user._id },
-            { $pull: { 'projectInvitations.received': { projectId: new ObjectId(projectId), invitedBy: new ObjectId(invitedBy) } } }
+            { 
+                $pull: { 'projectInvitations.received': { projectId: new ObjectId(projectId), invitedBy: new ObjectId(invitedBy) } },
+                $addToSet: { projects: new ObjectId(projectId) }
+            }
         );
 
         await db.collection('users').updateOne(
@@ -1241,24 +1252,81 @@ app.get('/api/projects/invitations', checkUser, async (req, res) => {
     }
 });
 
-// Migration endpoint to add projectInvitations field to existing users
-app.post('/api/migrate/add-project-invitations', async (req, res) => {
+// Migration endpoint to add missing fields to existing users
+app.post('/api/migrate/add-user-fields', async (req, res) => {
     try {
-        const result = await db.collection('users').updateMany(
+        const projectInvitationsResult = await db.collection('users').updateMany(
             { projectInvitations: { $exists: false } },
             { $set: { projectInvitations: { sent: [], received: [] } } }
         );
 
+        const projectsResult = await db.collection('users').updateMany(
+            { projects: { $exists: false } },
+            { $set: { projects: [] } }
+        );
+
         res.json({
             success: true,
-            message: `Updated ${result.modifiedCount} users with projectInvitations field`,
-            modifiedCount: result.modifiedCount
+            message: `Updated ${projectInvitationsResult.modifiedCount} users with projectInvitations field and ${projectsResult.modifiedCount} users with projects field`,
+            projectInvitationsUpdated: projectInvitationsResult.modifiedCount,
+            projectsUpdated: projectsResult.modifiedCount
         });
     } catch (error) {
         console.error('Migration error:', error);
         res.status(500).json({
             success: false,
             message: 'Error during migration'
+        });
+    }
+});
+
+// Get user's projects
+app.get('/api/users/:id/projects', checkUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID format'
+            });
+        }
+
+        const user = await db.collection('users').findOne({ _id: new ObjectId(id) });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        const projectIds = user.projects || [];
+        const projects = await db.collection('projects')
+            .find({ _id: { $in: projectIds } })
+            .sort({ updatedAt: -1 })
+            .toArray();
+
+        // Add owner info to each project
+        for (let project of projects) {
+            const owner = await db.collection('users').findOne({ _id: project.owner });
+            if (owner) {
+                project.ownerInfo = {
+                    _id: owner._id,
+                    name: owner.name,
+                    email: owner.email
+                };
+            }
+        }
+
+        res.json({
+            success: true,
+            projects
+        });
+    } catch (error) {
+        console.error('Get user projects error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching user projects'
         });
     }
 });
