@@ -655,47 +655,14 @@ app.post('/api/projects/:id/checkin', checkUser, async (req, res) => {
     }
 });
 
-app.post('/api/friends/decline', checkUser, async (req, res) => {
-    try {
-        const { requestId } = req.body;
-        
-        if (!ObjectId.isValid(requestId)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid request ID format'
-            });
-        }
-
-        await db.collection('friendRequests').deleteOne({ _id: new ObjectId(requestId) });
-
-        res.json({
-            success: true,
-            message: 'Friend request declined'
-        });
-    } catch (error) {
-        console.error('Decline friend request error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error declining friend request'
-        });
-    }
-});
-
 app.post('/api/friends/request', checkUser, async (req, res) => {
     try {
         const { userId } = req.body;
 
-        if (!userId) {
+        if (!userId || userId === req.user._id.toString()) {
             return res.status(400).json({
                 success: false,
-                message: 'User ID is required'
-            });
-        }
-
-        if (userId === req.user._id.toString()) {
-            return res.status(400).json({
-                success: false,
-                message: 'You cannot send a friend request to yourself'
+                message: 'Invalid user ID'
             });
         }
 
@@ -707,40 +674,37 @@ app.post('/api/friends/request', checkUser, async (req, res) => {
             });
         }
 
-        if (req.user.friends.some(friendId => friendId.toString() === userId)) {
+        if (req.user.friends && req.user.friends.some(friendId => friendId.toString() === userId)) {
             return res.status(400).json({
                 success: false,
-                message: 'You are already friends with this user'
+                message: 'Already friends'
             });
         }
 
-        const existingRequest = await db.collection('friendships').findOne({
-            $or: [
-                { requester: req.user._id, recipient: new ObjectId(userId) },
-                { requester: new ObjectId(userId), recipient: req.user._id }
-            ],
-            status: 'pending'
-        });
+        const userRequests = req.user.friendRequests || { sent: [], received: [] };
+        const targetRequests = targetUser.friendRequests || { sent: [], received: [] };
 
-        if (existingRequest) {
+        if (userRequests.sent.some(id => id.toString() === userId) || 
+            targetRequests.received.some(id => id.toString() === req.user._id.toString())) {
             return res.status(400).json({
                 success: false,
-                message: 'Friend request already exists'
+                message: 'Request already sent'
             });
         }
 
-        const friendRequest = {
-            requester: req.user._id,
-            recipient: new ObjectId(userId),
-            status: 'pending',
-            createdAt: new Date()
-        };
+        await db.collection('users').updateOne(
+            { _id: req.user._id },
+            { $addToSet: { 'friendRequests.sent': new ObjectId(userId) } }
+        );
 
-        await db.collection('friendships').insertOne(friendRequest);
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(userId) },
+            { $addToSet: { 'friendRequests.received': req.user._id } }
+        );
 
         res.json({
             success: true,
-            message: 'Friend request sent successfully'
+            message: 'Friend request sent'
         });
     } catch (error) {
         console.error('Friend request error:', error);
@@ -755,32 +719,27 @@ app.post('/api/friends/accept', checkUser, async (req, res) => {
     try {
         const { requestId } = req.body;
 
-        const friendship = await db.collection('friendships').findOne({
-            _id: new ObjectId(requestId),
-            recipient: req.user._id,
-            status: 'pending'
-        });
-
-        if (!friendship) {
-            return res.status(404).json({
+        if (!ObjectId.isValid(requestId)) {
+            return res.status(400).json({
                 success: false,
-                message: 'Friend request not found'
+                message: 'Invalid request ID'
             });
         }
 
-        await db.collection('friendships').updateOne(
-            { _id: new ObjectId(requestId) },
-            { $set: { status: 'accepted' } }
-        );
-
         await db.collection('users').updateOne(
             { _id: req.user._id },
-            { $addToSet: { friends: friendship.requester } }
+            { 
+                $pull: { 'friendRequests.received': new ObjectId(requestId) },
+                $addToSet: { friends: new ObjectId(requestId) }
+            }
         );
 
         await db.collection('users').updateOne(
-            { _id: friendship.requester },
-            { $addToSet: { friends: req.user._id } }
+            { _id: new ObjectId(requestId) },
+            { 
+                $pull: { 'friendRequests.sent': req.user._id },
+                $addToSet: { friends: req.user._id }
+            }
         );
 
         res.json({
@@ -796,22 +755,56 @@ app.post('/api/friends/accept', checkUser, async (req, res) => {
     }
 });
 
+app.post('/api/friends/decline', checkUser, async (req, res) => {
+    try {
+        const { requestId } = req.body;
+
+        if (!ObjectId.isValid(requestId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid request ID'
+            });
+        }
+
+        await db.collection('users').updateOne(
+            { _id: req.user._id },
+            { $pull: { 'friendRequests.received': new ObjectId(requestId) } }
+        );
+
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(requestId) },
+            { $pull: { 'friendRequests.sent': req.user._id } }
+        );
+
+        res.json({
+            success: true,
+            message: 'Friend request declined'
+        });
+    } catch (error) {
+        console.error('Decline friend request error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error declining friend request'
+        });
+    }
+});
+
 app.get('/api/friends/requests', checkUser, async (req, res) => {
     try {
-        const requests = await db.collection('friendships')
-            .find({
-                recipient: req.user._id,
-                status: 'pending'
-            })
+        const userRequests = req.user.friendRequests || { sent: [], received: [] };
+        const requestIds = userRequests.received || [];
+        
+        const requesters = await db.collection('users')
+            .find({ _id: { $in: requestIds } })
             .toArray();
 
-        for (let request of requests) {
-            const requester = await db.collection('users').findOne({ _id: request.requester });
-            if (requester) {
-                const { password: _, ...requesterInfo } = requester;
-                request.requesterInfo = requesterInfo;
-            }
-        }
+        const requests = requesters.map(requester => {
+            const { password: _, ...requesterInfo } = requester;
+            return {
+                _id: requester._id,
+                requesterInfo
+            };
+        });
 
         res.json({
             success: true,
@@ -822,6 +815,47 @@ app.get('/api/friends/requests', checkUser, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error fetching friend requests'
+        });
+    }
+});
+
+app.get('/api/friends/:userId', checkUser, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        if (!ObjectId.isValid(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID format'
+            });
+        }
+
+        const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        const friends = await db.collection('users')
+            .find({ _id: { $in: user.friends || [] } })
+            .toArray();
+
+        const safeFriends = friends.map(friend => {
+            const { password: _, ...safeFriend } = friend;
+            return safeFriend;
+        });
+
+        res.json({
+            success: true,
+            friends: safeFriends
+        });
+    } catch (error) {
+        console.error('Get friends error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching friends'
         });
     }
 });

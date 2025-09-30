@@ -12,6 +12,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
     const [profileUser, setProfileUser] = useState(null);
     const [userProjects, setUserProjects] = useState([]);
     const [friendRequests, setFriendRequests] = useState([]);
+    const [friends, setFriends] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showEditProfile, setShowEditProfile] = useState(false);
@@ -27,12 +28,14 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
         setError(null);
 
         try {
-            const [userResponse, projectsResponse] = await Promise.all([
+            const [userResponse, projectsResponse, friendsResponse] = await Promise.all([
                 usersAPI.getById(userId),
-                projectsAPI.getAll()
+                projectsAPI.getAll(),
+                friendsAPI.getFriends(userId)
             ]);
 
             setProfileUser(userResponse.user);
+            setFriends(friendsResponse.friends || []);
 
             const userOwnedProjects = projectsResponse.projects.filter(
                 project => project.owner.toString() === userId
@@ -170,7 +173,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                         <span className="stat-label">Projects</span>
                                     </div>
                                     <div className="stat-item">
-                                        <span className="stat-number">{profileUser?.friends?.length || 0}</span>
+                                        <span className="stat-number">{friends.length}</span>
                                         <span className="stat-label">Friends</span>
                                     </div>
                                     <div className="stat-item">
@@ -182,54 +185,60 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                 </div>
                             </div>
 
-                            {isOwnProfile && friendRequests.length > 0 && (
+                            {isOwnProfile && (
                                 <div className="friend-requests-section">
                                     <h3>Friend Requests ({friendRequests.length})</h3>
                                     <div className="friend-requests">
-                                        {friendRequests.map(request => (
-                                            <div key={request._id} className="request-item">
-                                                <div className="request-info">
-                                                    <div className="friend-avatar">
-                                                        {request.requesterInfo?.profilePicture ? (
-                                                            <img src={request.requesterInfo.profilePicture} alt="Profile" className="avatar-image" />
-                                                        ) : (
-                                                            <div className="default-avatar">👤</div>
-                                                        )}
+                                        {friendRequests.length > 0 ? (
+                                            friendRequests.map(request => (
+                                                <div key={request._id} className="request-item">
+                                                    <div className="request-info">
+                                                        <div className="friend-avatar">
+                                                            {request.requesterInfo?.profilePicture ? (
+                                                                <img src={request.requesterInfo.profilePicture} alt="Profile" className="avatar-image" />
+                                                            ) : (
+                                                                <div className="default-avatar">👤</div>
+                                                            )}
+                                                        </div>
+                                                        <div className="request-details">
+                                                            <span className="friend-name">
+                                                                {request.requesterInfo?.name || 'Unknown'}
+                                                            </span>
+                                                            <span className="friend-email">
+                                                                {request.requesterInfo?.email}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div className="request-details">
-                                                        <span className="friend-name">
-                                                            {request.requesterInfo?.name || 'Unknown'}
-                                                        </span>
-                                                        <span className="friend-email">
-                                                            {request.requesterInfo?.email}
-                                                        </span>
+                                                    <div className="request-actions">
+                                                        <button
+                                                            className="btn-small btn-primary"
+                                                            onClick={() => handleAcceptFriend(request._id)}
+                                                        >
+                                                            Accept
+                                                        </button>
+                                                        <button 
+                                                            className="btn-small btn-secondary"
+                                                            onClick={() => handleDeclineFriend(request._id)}
+                                                        >
+                                                            Decline
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <div className="request-actions">
-                                                    <button
-                                                        className="btn-small btn-primary"
-                                                        onClick={() => handleAcceptFriend(request._id)}
-                                                    >
-                                                        Accept
-                                                    </button>
-                                                    <button 
-                                                        className="btn-small btn-secondary"
-                                                        onClick={() => handleDeclineFriend(request._id)}
-                                                    >
-                                                        Decline
-                                                    </button>
-                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="empty-state">
+                                                <p>No friend requests</p>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
                                 </div>
                             )}
 
                             <div className="friends-section">
-                                <h3>Friends ({profileUser?.friends?.length || 0})</h3>
+                                <h3>Friends</h3>
                                 <div className="friends-list">
-                                    {profileUser?.friends?.length > 0 ? (
-                                        profileUser.friends.map(friend => (
+                                    {friends.length > 0 ? (
+                                        friends.map(friend => (
                                             <div key={friend._id} className="friend-item">
                                                 <div className="friend-avatar">
                                                     {friend.profilePicture ? (
@@ -242,12 +251,14 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                     <span className="friend-name">{friend.name}</span>
                                                     <span className="friend-email">{friend.email}</span>
                                                 </div>
-                                                <button 
-                                                    className="btn-small btn-secondary"
-                                                    onClick={() => navigate(`/profile/${friend._id}`)}
-                                                >
-                                                    View Profile
-                                                </button>
+                                                {friend._id !== currentUser._id && (
+                                                    <button 
+                                                        className="btn-small btn-secondary"
+                                                        onClick={() => navigate(`/profile/${friend._id}`)}
+                                                    >
+                                                        View Profile
+                                                    </button>
+                                                )}
                                             </div>
                                         ))
                                     ) : (

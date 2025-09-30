@@ -186,5 +186,12 @@ export const friendsAPI = {
             headers: getAuthHeaders()
         });
         return handleResponse(response);
+    },
+
+    getFriends: async (userId) => {
+        const response = await fetch(`${API_BASE_URL}/api/friends/${userId}`, {
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
     }
 };

@@ -1166,14 +1166,16 @@ h6 {
     color: var(--soft-text);
 }
 
-.friends-section {
+.friends-section,
+.friend-requests-section {
     background-color: var(--white);
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.friends-section h3 {
+.friends-section h3,
+.friend-requests-section h3 {
     font-family: 'Inter', sans-serif;
     font-size: 18px;
     font-weight: 600;
@@ -1181,126 +1183,106 @@ h6 {
     margin-bottom: 16px;
 }
 
-.friends-section h4 {
-    font-family: 'Inter', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--main-text);
-    margin-bottom: 12px;
-    margin-top: 24px;
-}
-
 .friends-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .friend-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px;
+    padding: 12px;
     border-radius: 8px;
     transition: background-color 0.3s ease;
+    border: 1px solid transparent;
 }
 
 .friend-item:hover {
     background-color: var(--accent-bg);
+    border-color: var(--fill-color);
 }
 
 .friend-avatar {
-    position: relative;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     background-color: var(--fill-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Inter', sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--main-text);
     flex-shrink: 0;
+    overflow: hidden;
 }
 
-.status-indicator.online {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid white;
-    background-color: #27ae60;
-}
-
-.status-indicator.offline {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid white;
-    background-color: #95a5a6;
-}
-
-.status-indicator.away {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid white;
-    background-color: #f39c12;
+.friend-details {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
 }
 
 .friend-name {
-    font-family: 'Khula', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 14px;
+    font-weight: 600;
     color: var(--main-text);
+    margin-bottom: 2px;
+}
+
+.friend-email {
+    font-family: 'Khula', sans-serif;
+    font-size: 12px;
+    color: var(--soft-text);
 }
 
 .friend-requests {
-    border-top: 1px solid var(--fill-color);
-    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .request-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--accent-bg);
+    gap: 12px;
+    padding: 16px;
+    border-radius: 12px;
+    background-color: var(--accent-bg);
+    border: 1px solid var(--fill-color);
+    transition: all 0.3s ease;
 }
 
-.request-item:last-child {
-    border-bottom: none;
+.request-item:hover {
+    background-color: var(--white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .request-info {
     display: flex;
     align-items: center;
     gap: 12px;
+    flex: 1;
 }
 
 .request-details {
     display: flex;
     flex-direction: column;
-}
-
-.mutual-friends {
-    font-family: 'Khula', sans-serif;
-    font-size: 12px;
-    color: var(--soft-text);
+    flex: 1;
+    min-width: 0;
 }
 
 .request-actions {
     display: flex;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 .profile-main {
@@ -2294,78 +2276,65 @@ h6 {
         border: 1px solid #ffeaa7;
     }
 
-    .friend-details {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-    }
-
-    .friend-email {
-        font-size: 12px;
-        color: var(--soft-text);
-    }
-
     /* Mobile responsive adjustments for search page */
-    @media (max-width: 768px) {
-        .users-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-
-        .user-card {
-            flex-direction: column;
-            text-align: center;
-            padding: 20px;
-            gap: 16px;
-        }
-
-        .user-info {
-            text-align: center;
-        }
-
-        .user-actions {
-            flex-direction: row;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .user-actions .btn {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .search-container h1 {
-            font-size: 28px;
-        }
+    .users-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
-    @media (max-width: 480px) {
-        .search-content {
-            padding: 20px 0;
-        }
+    .user-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+        gap: 16px;
+    }
 
-        .user-card {
-            padding: 16px;
-            gap: 12px;
-        }
+    .user-info {
+        text-align: center;
+    }
 
-        .user-avatar {
-            width: 56px;
-            height: 56px;
-            font-size: 20px;
-        }
+    .user-actions {
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+    }
 
-        .user-info h3 {
-            font-size: 16px;
-        }
+    .user-actions .btn {
+        flex: 1;
+        min-width: 0;
+    }
 
-        .user-info p {
-            font-size: 13px;
-        }
+    .search-container h1 {
+        font-size: 28px;
+    }
+}
 
-        .user-actions .btn {
-            font-size: 12px;
-            padding: 6px 12px;
-        }
+@media (max-width: 480px) {
+    .search-content {
+        padding: 20px 0;
+    }
+
+    .user-card {
+        padding: 16px;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 56px;
+        height: 56px;
+        font-size: 20px;
+    }
+
+    .user-info h3 {
+        font-size: 16px;
+    }
+
+    .user-info p {
+        font-size: 13px;
+    }
+
+    .user-actions .btn {
+        font-size: 12px;
+        padding: 6px 12px;
     }
 }

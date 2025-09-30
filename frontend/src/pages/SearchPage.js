@@ -10,9 +10,11 @@ const SearchPage = ({ currentUser, onLogout }) => {
     const [allUsers, setAllUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [friendsList, setFriendsList] = useState([]);
 
     useEffect(() => {
         loadAllUsers();
+        loadFriends();
     }, []);
 
     const loadAllUsers = async () => {
@@ -26,6 +28,19 @@ const SearchPage = ({ currentUser, onLogout }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const loadFriends = async () => {
+        try {
+            const response = await friendsAPI.getFriends(currentUser._id);
+            setFriendsList(response.friends || []);
+        } catch (error) {
+            console.error('Load friends error:', error);
+        }
+    };
+
+    const isFriend = (userId) => {
+        return friendsList.some(friend => friend._id === userId);
     };
 
     const handleInputChange = (e) => {
@@ -95,14 +110,14 @@ const SearchPage = ({ currentUser, onLogout }) => {
                                             </div>
                                             <div className="user-actions">
                                                 <button 
-                                                    className="btn btn-secondary btn-small"
+                                                    className="btn btn-primary btn-small"
                                                     onClick={() => navigate(`/profile/${user._id}`)}
                                                 >
                                                     View Profile
                                                 </button>
-                                                {user._id !== currentUser._id && (
+                                                {user._id !== currentUser._id && !isFriend(user._id) && (
                                                     <button 
-                                                        className="btn btn-primary btn-small"
+                                                        className="btn btn-secondary btn-small"
                                                         onClick={() => sendFriendRequest(user._id)}
                                                     >
                                                         Add Friend
