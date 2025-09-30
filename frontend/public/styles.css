@@ -1167,7 +1167,8 @@ h6 {
 }
 
 .friends-section,
-.friend-requests-section {
+.friend-requests-section,
+.project-invitations-section {
     background-color: var(--white);
     border-radius: 12px;
     padding: 24px;
@@ -1175,7 +1176,8 @@ h6 {
 }
 
 .friends-section h3,
-.friend-requests-section h3 {
+.friend-requests-section h3,
+.project-invitations-section h3 {
     font-family: 'Inter', sans-serif;
     font-size: 18px;
     font-weight: 600;
@@ -1243,7 +1245,8 @@ h6 {
     color: var(--soft-text);
 }
 
-.friend-requests {
+.friend-requests,
+.project-invitations {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -1865,6 +1868,39 @@ h6 {
     color: var(--soft-text);
 }
 
+.section-description {
+    font-family: 'Khula', sans-serif;
+    font-size: 14px;
+    color: var(--soft-text);
+    margin-bottom: 16px;
+}
+
+.invite-friends-preview {
+    background-color: var(--accent-bg);
+    border: 2px dashed var(--fill-color);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+}
+
+.invite-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.invite-icon {
+    font-size: 24px;
+}
+
+.invite-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    color: var(--main-text);
+    font-weight: 500;
+}
+
 /* Search Page Styles */
 .search-page {
     min-height: 100vh;
@@ -2276,6 +2312,15 @@ h6 {
         border: 1px solid #ffeaa7;
     }
 
+    /* Mobile responsive adjustments for invite modal */
+    .friends-invite-list {
+        max-height: 300px;
+    }
+
+    .friend-invite-item {
+        padding: 12px;
+    }
+
     /* Mobile responsive adjustments for search page */
     .users-grid {
         grid-template-columns: 1fr;
@@ -2337,4 +2382,82 @@ h6 {
         font-size: 12px;
         padding: 6px 12px;
     }
+}
+
+/* Invite Friends Modal Styles */
+.friends-invite-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--fill-color);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.friend-invite-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--fill-color);
+    transition: background-color 0.3s ease;
+}
+
+.friend-invite-item:last-child {
+    border-bottom: none;
+}
+
+.friend-invite-item:hover {
+    background-color: var(--accent-bg);
+}
+
+.friend-invite-item .friend-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: var(--fill-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--main-text);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.friend-invite-item .friend-details {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.friend-invite-item .friend-name {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--main-text);
+    margin-bottom: 2px;
+}
+
+.friend-invite-item .friend-email {
+    font-family: 'Khula', sans-serif;
+    font-size: 12px;
+    color: var(--soft-text);
+}
+
+/* Project Invitations Styles */
+.project-invitations-section {
+    margin-top: 24px;
+}
+
+.project-invitations-section .request-item {
+    background-color: rgba(245, 203, 92, 0.1);
+    border: 1px solid var(--highlight);
+}
+
+.project-invitations-section .friend-avatar {
+    background-color: var(--highlight);
+    color: var(--main-text);
 }

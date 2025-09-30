@@ -108,6 +108,7 @@ app.post('/api/auth/signup', async (req, res) => {
             profilePicture: null,
             friends: [],
             friendRequests: { sent: [], received: [] },
+            projectInvitations: { sent: [], received: [] },
             createdAt: new Date()
         };
 
@@ -1029,6 +1030,235 @@ app.get('/api/projects/:id', checkUser, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error fetching project'
+        });
+    }
+});
+
+// Project invitation endpoints
+app.post('/api/projects/:id/invite', checkUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { userId } = req.body;
+
+        if (!ObjectId.isValid(id) || !ObjectId.isValid(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project or user ID'
+            });
+        }
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(id) });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found'
+            });
+        }
+
+        if (project.owner.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only project owner can send invitations'
+            });
+        }
+
+        const targetUser = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+        if (!targetUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        if (project.members.some(member => member.toString() === userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'User is already a member of this project'
+            });
+        }
+
+        const userInvitations = req.user.projectInvitations || { sent: [], received: [] };
+        const targetInvitations = targetUser.projectInvitations || { sent: [], received: [] };
+
+        const invitationExists = userInvitations.sent.some(inv => 
+            inv.projectId.toString() === id && inv.userId.toString() === userId
+        );
+
+        if (invitationExists) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invitation already sent'
+            });
+        }
+
+        const invitation = {
+            projectId: new ObjectId(id),
+            userId: new ObjectId(userId),
+            projectName: project.name,
+            invitedBy: req.user._id,
+            invitedByName: req.user.name,
+            createdAt: new Date()
+        };
+
+        await db.collection('users').updateOne(
+            { _id: req.user._id },
+            { $push: { 'projectInvitations.sent': invitation } }
+        );
+
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(userId) },
+            { $push: { 'projectInvitations.received': invitation } }
+        );
+
+        res.json({
+            success: true,
+            message: 'Project invitation sent successfully'
+        });
+    } catch (error) {
+        console.error('Send project invitation error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error sending project invitation'
+        });
+    }
+});
+
+app.post('/api/projects/invitations/accept', checkUser, async (req, res) => {
+    try {
+        const { projectId, invitedBy } = req.body;
+
+        if (!ObjectId.isValid(projectId) || !ObjectId.isValid(invitedBy)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project or user ID'
+            });
+        }
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(projectId) });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found'
+            });
+        }
+
+        await db.collection('projects').updateOne(
+            { _id: new ObjectId(projectId) },
+            { $addToSet: { members: req.user._id } }
+        );
+
+        await db.collection('users').updateOne(
+            { _id: req.user._id },
+            { $pull: { 'projectInvitations.received': { projectId: new ObjectId(projectId), invitedBy: new ObjectId(invitedBy) } } }
+        );
+
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(invitedBy) },
+            { $pull: { 'projectInvitations.sent': { projectId: new ObjectId(projectId), userId: req.user._id } } }
+        );
+
+        res.json({
+            success: true,
+            message: 'Project invitation accepted'
+        });
+    } catch (error) {
+        console.error('Accept project invitation error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error accepting project invitation'
+        });
+    }
+});
+
+app.post('/api/projects/invitations/decline', checkUser, async (req, res) => {
+    try {
+        const { projectId, invitedBy } = req.body;
+
+        if (!ObjectId.isValid(projectId) || !ObjectId.isValid(invitedBy)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project or user ID'
+            });
+        }
+
+        await db.collection('users').updateOne(
+            { _id: req.user._id },
+            { $pull: { 'projectInvitations.received': { projectId: new ObjectId(projectId), invitedBy: new ObjectId(invitedBy) } } }
+        );
+
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(invitedBy) },
+            { $pull: { 'projectInvitations.sent': { projectId: new ObjectId(projectId), userId: req.user._id } } }
+        );
+
+        res.json({
+            success: true,
+            message: 'Project invitation declined'
+        });
+    } catch (error) {
+        console.error('Decline project invitation error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error declining project invitation'
+        });
+    }
+});
+
+app.get('/api/projects/invitations', checkUser, async (req, res) => {
+    try {
+        const userInvitations = req.user.projectInvitations || { sent: [], received: [] };
+        const receivedInvitations = userInvitations.received || [];
+        
+        const invitationsWithDetails = await Promise.all(
+            receivedInvitations.map(async (invitation) => {
+                const project = await db.collection('projects').findOne({ _id: invitation.projectId });
+                const inviter = await db.collection('users').findOne({ _id: invitation.invitedBy });
+                
+                return {
+                    ...invitation,
+                    projectInfo: project ? {
+                        name: project.name,
+                        description: project.description
+                    } : null,
+                    inviterInfo: inviter ? {
+                        name: inviter.name,
+                        email: inviter.email
+                    } : null
+                };
+            })
+        );
+
+        res.json({
+            success: true,
+            invitations: invitationsWithDetails
+        });
+    } catch (error) {
+        console.error('Get project invitations error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching project invitations'
+        });
+    }
+});
+
+// Migration endpoint to add projectInvitations field to existing users
+app.post('/api/migrate/add-project-invitations', async (req, res) => {
+    try {
+        const result = await db.collection('users').updateMany(
+            { projectInvitations: { $exists: false } },
+            { $set: { projectInvitations: { sent: [], received: [] } } }
+        );
+
+        res.json({
+            success: true,
+            message: `Updated ${result.modifiedCount} users with projectInvitations field`,
+            modifiedCount: result.modifiedCount
+        });
+    } catch (error) {
+        console.error('Migration error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error during migration'
         });
     }
 });

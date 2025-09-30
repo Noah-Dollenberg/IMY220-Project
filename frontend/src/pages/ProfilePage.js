@@ -13,6 +13,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
     const [userProjects, setUserProjects] = useState([]);
     const [friendRequests, setFriendRequests] = useState([]);
     const [friends, setFriends] = useState([]);
+    const [projectInvitations, setProjectInvitations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showEditProfile, setShowEditProfile] = useState(false);
@@ -44,11 +45,16 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
 
             if (isOwnProfile) {
                 try {
-                    const friendRequestsResponse = await friendsAPI.getRequests();
+                    const [friendRequestsResponse, projectInvitationsResponse] = await Promise.all([
+                        friendsAPI.getRequests(),
+                        projectsAPI.getInvitations()
+                    ]);
                     setFriendRequests(friendRequestsResponse.requests || []);
+                    setProjectInvitations(projectInvitationsResponse.invitations || []);
                 } catch (err) {
-                    console.error('Failed to load friend requests:', err);
+                    console.error('Failed to load requests:', err);
                     setFriendRequests([]);
+                    setProjectInvitations([]);
                 }
             }
         } catch (err) {
@@ -87,6 +93,29 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
             setFriendRequests(prev => prev.filter(req => req._id !== requestId));
         } catch (err) {
             alert('Failed to decline friend request: ' + err.message);
+        }
+    };
+
+    const handleAcceptProjectInvitation = async (projectId, invitedBy) => {
+        try {
+            await projectsAPI.acceptInvitation(projectId, invitedBy);
+            setProjectInvitations(prev => prev.filter(inv => 
+                !(inv.projectId.toString() === projectId && inv.invitedBy.toString() === invitedBy)
+            ));
+            fetchProfileData(); // Refresh to show new project
+        } catch (err) {
+            alert('Failed to accept project invitation: ' + err.message);
+        }
+    };
+
+    const handleDeclineProjectInvitation = async (projectId, invitedBy) => {
+        try {
+            await projectsAPI.declineInvitation(projectId, invitedBy);
+            setProjectInvitations(prev => prev.filter(inv => 
+                !(inv.projectId.toString() === projectId && inv.invitedBy.toString() === invitedBy)
+            ));
+        } catch (err) {
+            alert('Failed to decline project invitation: ' + err.message);
         }
     };
 
@@ -186,52 +215,97 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                             </div>
 
                             {isOwnProfile && (
-                                <div className="friend-requests-section">
-                                    <h3>Friend Requests ({friendRequests.length})</h3>
-                                    <div className="friend-requests">
-                                        {friendRequests.length > 0 ? (
-                                            friendRequests.map(request => (
-                                                <div key={request._id} className="request-item">
-                                                    <div className="request-info">
-                                                        <div className="friend-avatar">
-                                                            {request.requesterInfo?.profilePicture ? (
-                                                                <img src={request.requesterInfo.profilePicture} alt="Profile" className="avatar-image" />
-                                                            ) : (
-                                                                <div className="default-avatar">👤</div>
-                                                            )}
+                                <>
+                                    <div className="friend-requests-section">
+                                        <h3>Friend Requests ({friendRequests.length})</h3>
+                                        <div className="friend-requests">
+                                            {friendRequests.length > 0 ? (
+                                                friendRequests.map(request => (
+                                                    <div key={request._id} className="request-item">
+                                                        <div className="request-info">
+                                                            <div className="friend-avatar">
+                                                                {request.requesterInfo?.profilePicture ? (
+                                                                    <img src={request.requesterInfo.profilePicture} alt="Profile" className="avatar-image" />
+                                                                ) : (
+                                                                    <div className="default-avatar">👤</div>
+                                                                )}
+                                                            </div>
+                                                            <div className="request-details">
+                                                                <span className="friend-name">
+                                                                    {request.requesterInfo?.name || 'Unknown'}
+                                                                </span>
+                                                                <span className="friend-email">
+                                                                    {request.requesterInfo?.email}
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                        <div className="request-details">
-                                                            <span className="friend-name">
-                                                                {request.requesterInfo?.name || 'Unknown'}
-                                                            </span>
-                                                            <span className="friend-email">
-                                                                {request.requesterInfo?.email}
-                                                            </span>
+                                                        <div className="request-actions">
+                                                            <button
+                                                                className="btn-small btn-primary"
+                                                                onClick={() => handleAcceptFriend(request._id)}
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                            <button 
+                                                                className="btn-small btn-secondary"
+                                                                onClick={() => handleDeclineFriend(request._id)}
+                                                            >
+                                                                Decline
+                                                            </button>
                                                         </div>
                                                     </div>
-                                                    <div className="request-actions">
-                                                        <button
-                                                            className="btn-small btn-primary"
-                                                            onClick={() => handleAcceptFriend(request._id)}
-                                                        >
-                                                            Accept
-                                                        </button>
-                                                        <button 
-                                                            className="btn-small btn-secondary"
-                                                            onClick={() => handleDeclineFriend(request._id)}
-                                                        >
-                                                            Decline
-                                                        </button>
-                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="empty-state">
+                                                    <p>No friend requests</p>
                                                 </div>
-                                            ))
-                                        ) : (
-                                            <div className="empty-state">
-                                                <p>No friend requests</p>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+
+                                    <div className="project-invitations-section">
+                                        <h3>Project Invitations ({projectInvitations.length})</h3>
+                                        <div className="project-invitations">
+                                            {projectInvitations.length > 0 ? (
+                                                projectInvitations.map(invitation => (
+                                                    <div key={`${invitation.projectId}-${invitation.invitedBy}`} className="request-item">
+                                                        <div className="request-info">
+                                                            <div className="friend-avatar">
+                                                                <div className="default-avatar">📁</div>
+                                                            </div>
+                                                            <div className="request-details">
+                                                                <span className="friend-name">
+                                                                    {invitation.projectInfo?.name || 'Unknown Project'}
+                                                                </span>
+                                                                <span className="friend-email">
+                                                                    Invited by {invitation.inviterInfo?.name || 'Unknown'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="request-actions">
+                                                            <button
+                                                                className="btn-small btn-primary"
+                                                                onClick={() => handleAcceptProjectInvitation(invitation.projectId, invitation.invitedBy)}
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                            <button 
+                                                                className="btn-small btn-secondary"
+                                                                onClick={() => handleDeclineProjectInvitation(invitation.projectId, invitation.invitedBy)}
+                                                            >
+                                                                Decline
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="empty-state">
+                                                    <p>No project invitations</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
                             )}
 
                             <div className="friends-section">
@@ -253,7 +327,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                 </div>
                                                 {friend._id !== currentUser._id && (
                                                     <button 
-                                                        className="btn-small btn-secondary"
+                                                        className="btn btn-secondary edit-profile-btn"
                                                         onClick={() => navigate(`/profile/${friend._id}`)}
                                                     >
                                                         View Profile
@@ -273,7 +347,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                         <div className="profile-main">
                             <div className="section-header">
                                 <div>
-                                    <h2>Projects ({userProjects.length})</h2>
+                                    <h2>Projects</h2>
                                     <p>Projects {isOwnProfile ? "you've" : `${profileUser?.name} has`} created</p>
                                 </div>
                             </div>

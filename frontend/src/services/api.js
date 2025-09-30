@@ -88,6 +88,40 @@ export const projectsAPI = {
             body: JSON.stringify({ message, version, files })
         });
         return handleResponse(response);
+    },
+
+    sendInvitation: async (projectId, userId) => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/invite`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ userId })
+        });
+        return handleResponse(response);
+    },
+
+    acceptInvitation: async (projectId, invitedBy) => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/invitations/accept`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ projectId, invitedBy })
+        });
+        return handleResponse(response);
+    },
+
+    declineInvitation: async (projectId, invitedBy) => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/invitations/decline`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ projectId, invitedBy })
+        });
+        return handleResponse(response);
+    },
+
+    getInvitations: async () => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/invitations`, {
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
     }
 };
 

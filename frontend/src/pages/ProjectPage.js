@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
+import InviteFriendsModal from '../components/InviteFriendsModal';
 import { projectsAPI } from '../services/api';
 
 const ProjectPage = ({ currentUser, onLogout }) => {
@@ -17,6 +18,7 @@ const ProjectPage = ({ currentUser, onLogout }) => {
         version: '',
         files: []
     });
+    const [showInviteFriends, setShowInviteFriends] = useState(false);
 
     useEffect(() => {
         fetchProject();
@@ -83,10 +85,24 @@ const ProjectPage = ({ currentUser, onLogout }) => {
         member => member.toString() === currentUser?._id
     );
 
+    const isProjectOwner = project?.owner?.toString() === currentUser?._id;
+
     const canCheckout = isProjectMember && project?.status === 'checked-in';
     const canCheckin = isProjectMember &&
         project?.status === 'checked-out' &&
         project?.checkedOutBy?.toString() === currentUser?._id;
+
+    const handleInviteFriends = () => {
+        setShowInviteFriends(true);
+    };
+
+    const handleInviteSent = () => {
+        // Invitation sent successfully
+    };
+
+    const handleCloseInviteModal = () => {
+        setShowInviteFriends(false);
+    };
 
     if (loading) {
         return (
@@ -313,6 +329,17 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                                         </div>
                                     </div>
                                 </div>
+                                
+                                {isProjectOwner && (
+                                    <div className="project-actions">
+                                        <button
+                                            className="btn btn-secondary"
+                                            onClick={handleInviteFriends}
+                                        >
+                                            Invite Friends
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -343,6 +370,14 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                     </div>
                 </div>
             </main>
+
+            {showInviteFriends && (
+                <InviteFriendsModal
+                    projectId={projectId}
+                    onClose={handleCloseInviteModal}
+                    onInviteSent={handleInviteSent}
+                />
+            )}
         </div>
     );
 };

@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import InviteFriendsModal from '../components/InviteFriendsModal';
+import { projectsAPI } from '../services/api';
 
 const CreateProjectPage = ({ currentUser, onLogout }) => {
     const navigate = useNavigate();
@@ -16,6 +18,8 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const [dragActive, setDragActive] = useState(false);
     const [errors, setErrors] = useState({});
+    const [showInviteFriends, setShowInviteFriends] = useState(false);
+    const [createdProjectId, setCreatedProjectId] = useState(null);
 
     const validateForm = () => {
         const newErrors = {};
@@ -106,21 +110,45 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!validateForm()) {
             return;
         }
 
-        const projectData = {
-            ...formData,
-            files: uploadedFiles,
-            createdAt: new Date().toISOString()
-        };
+        try {
+            const projectData = {
+                ...formData,
+                files: uploadedFiles.map(file => ({
+                    name: file.name,
+                    size: file.size,
+                    type: file.type
+                }))
+            };
 
-        console.log('Creating project:', projectData);
-        alert('Project created successfully!');
+            const response = await projectsAPI.create(projectData);
+            setCreatedProjectId(response.projectId);
+            alert('Project created successfully!');
+            
+            // Ask if user wants to invite friends
+            const inviteFriends = window.confirm('Would you like to invite friends to collaborate on this project?');
+            if (inviteFriends) {
+                setShowInviteFriends(true);
+            } else {
+                navigate('/home');
+            }
+        } catch (error) {
+            alert('Failed to create project: ' + error.message);
+        }
+    };
+
+    const handleInviteSent = () => {
+        // Invitation sent successfully
+    };
+
+    const handleCloseInviteModal = () => {
+        setShowInviteFriends(false);
         navigate('/home');
     };
 
@@ -291,6 +319,17 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                                 </div>
                             </div>
 
+                            <div className="form-section">
+                                <h3 className="section-title">Invite Friends (Optional)</h3>
+                                <p className="section-description">You can invite friends to collaborate on this project after creation, or skip this step for now.</p>
+                                <div className="invite-friends-preview">
+                                    <div className="invite-info">
+                                        <span className="invite-icon">👥</span>
+                                        <span className="invite-text">Invite friends after project creation</span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="form-actions">
                                 <button
                                     type="button"
@@ -310,6 +349,14 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                     </div>
                 </div>
             </main>
+
+            {showInviteFriends && createdProjectId && (
+                <InviteFriendsModal
+                    projectId={createdProjectId}
+                    onClose={handleCloseInviteModal}
+                    onInviteSent={handleInviteSent}
+                />
+            )}
         </div>
     );
 };
