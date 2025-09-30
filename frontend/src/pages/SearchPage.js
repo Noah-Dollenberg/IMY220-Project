@@ -1,9 +1,11 @@
 // NJ (Noah) Dollenberg u24596142 41
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import { usersAPI, friendsAPI } from '../services/api';
 
 const SearchPage = ({ currentUser, onLogout }) => {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [allUsers, setAllUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -94,7 +96,7 @@ const SearchPage = ({ currentUser, onLogout }) => {
                                             <div className="user-actions">
                                                 <button 
                                                     className="btn btn-secondary btn-small"
-                                                    onClick={() => window.location.href = `/profile/${user._id}`}
+                                                    onClick={() => navigate(`/profile/${user._id}`)}
                                                 >
                                                     View Profile
                                                 </button>

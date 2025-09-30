@@ -1,6 +1,6 @@
 // NJ (Noah) Dollenberg u24596142 41
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import ProjectPreview from '../components/ProjectPreview';
 import EditProfileModal from '../components/EditProfileModal';
@@ -8,6 +8,7 @@ import { usersAPI, projectsAPI, friendsAPI } from '../services/api';
 
 const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
     const { userId } = useParams();
+    const navigate = useNavigate();
     const [profileUser, setProfileUser] = useState(null);
     const [userProjects, setUserProjects] = useState([]);
     const [friendRequests, setFriendRequests] = useState([]);
@@ -243,7 +244,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                 </div>
                                                 <button 
                                                     className="btn-small btn-secondary"
-                                                    onClick={() => window.location.href = `/profile/${friend._id}`}
+                                                    onClick={() => navigate(`/profile/${friend._id}`)}
                                                 >
                                                     View Profile
                                                 </button>
@@ -292,7 +293,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                         {isOwnProfile && (
                                             <button
                                                 className="btn btn-primary"
-                                                onClick={() => window.location.href = '/create-project'}
+                                                onClick={() => navigate('/create-project')}
                                             >
                                                 Create Your First Project
                                             </button>
