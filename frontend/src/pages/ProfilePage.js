@@ -6,7 +6,7 @@ import ProjectPreview from '../components/ProjectPreview';
 import EditProfileModal from '../components/EditProfileModal';
 import { usersAPI, projectsAPI, friendsAPI } from '../services/api';
 
-const ProfilePage = ({ currentUser, onLogout }) => {
+const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
     const { userId } = useParams();
     const [profileUser, setProfileUser] = useState(null);
     const [userProjects, setUserProjects] = useState([]);
@@ -58,6 +58,9 @@ const ProfilePage = ({ currentUser, onLogout }) => {
         try {
             const response = await usersAPI.update(userId, updatedData);
             setProfileUser(response.user);
+            if (isOwnProfile && onUpdateUser) {
+                onUpdateUser(response.user);
+            }
             setShowEditProfile(false);
         } catch (err) {
             alert('Failed to update profile: ' + err.message);

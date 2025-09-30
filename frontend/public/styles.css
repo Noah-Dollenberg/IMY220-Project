@@ -1883,6 +1883,146 @@ h6 {
     color: var(--soft-text);
 }
 
+/* Search Page Styles */
+.search-page {
+    min-height: 100vh;
+    background-color: var(--accent-bg);
+}
+
+.search-content {
+    padding: 32px 0;
+}
+
+.search-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.search-container h1 {
+    text-align: center;
+    margin-bottom: 32px;
+    color: var(--main-text);
+}
+
+.search-form {
+    margin-bottom: 32px;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 12px;
+}
+
+.search-input-group .form-input {
+    flex: 1;
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.user-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--fill-color);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.user-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    border-color: var(--highlight);
+}
+
+.user-avatar {
+    width: 64px;
+    height: 64px;
+    background-color: var(--fill-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--main-text);
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 3px solid var(--white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.user-info h3 {
+    margin: 0;
+    color: var(--main-text);
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.user-info p {
+    margin: 0;
+    color: var(--soft-text);
+    font-size: 14px;
+    font-family: 'Khula', sans-serif;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.user-info p:first-of-type {
+    color: var(--main-text);
+    font-weight: 500;
+}
+
+.user-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+    min-width: 100px;
+}
+
+.user-actions .btn {
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.default-avatar {
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-loading {
+    color: var(--soft-text);
+    font-size: 14px;
+    margin-left: 12px;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 1024px) {
     .profile-layout {
@@ -2154,101 +2294,6 @@ h6 {
         border: 1px solid #ffeaa7;
     }
 
-    /* Search Page Styles */
-    .search-page {
-        min-height: 100vh;
-        background-color: var(--accent-bg);
-    }
-
-    .search-content {
-        padding: 32px 0;
-    }
-
-    .search-container {
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .search-container h1 {
-        text-align: center;
-        margin-bottom: 32px;
-        color: var(--main-text);
-    }
-
-    .search-form {
-        margin-bottom: 32px;
-    }
-
-    .search-input-group {
-        display: flex;
-        gap: 12px;
-    }
-
-    .search-input-group .form-input {
-        flex: 1;
-    }
-
-    .users-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-    }
-
-    .user-card {
-        background: var(--white);
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 16px;
-    }
-
-    .user-avatar {
-        width: 60px;
-        height: 60px;
-        background-color: var(--fill-color);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: 600;
-        color: var(--main-text);
-        overflow: hidden;
-    }
-
-    .user-info h3 {
-        margin: 0 0 4px 0;
-        color: var(--main-text);
-    }
-
-    .user-info p {
-        margin: 0;
-        color: var(--soft-text);
-        font-size: 14px;
-    }
-
-    .user-actions {
-        display: flex;
-        gap: 8px;
-    }
-
-    .default-avatar {
-        font-size: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .search-loading {
-        color: var(--soft-text);
-        font-size: 14px;
-        margin-left: 12px;
-    }
-
     .friend-details {
         display: flex;
         flex-direction: column;
@@ -2258,5 +2303,69 @@ h6 {
     .friend-email {
         font-size: 12px;
         color: var(--soft-text);
+    }
+
+    /* Mobile responsive adjustments for search page */
+    @media (max-width: 768px) {
+        .users-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .user-card {
+            flex-direction: column;
+            text-align: center;
+            padding: 20px;
+            gap: 16px;
+        }
+
+        .user-info {
+            text-align: center;
+        }
+
+        .user-actions {
+            flex-direction: row;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .user-actions .btn {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-container h1 {
+            font-size: 28px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .search-content {
+            padding: 20px 0;
+        }
+
+        .user-card {
+            padding: 16px;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 56px;
+            height: 56px;
+            font-size: 20px;
+        }
+
+        .user-info h3 {
+            font-size: 16px;
+        }
+
+        .user-info p {
+            font-size: 13px;
+        }
+
+        .user-actions .btn {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
     }
 }

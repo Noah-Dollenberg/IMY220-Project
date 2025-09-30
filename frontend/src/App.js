@@ -14,6 +14,10 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState(null);
 
+    const updateCurrentUser = (updatedUser) => {
+        setCurrentUser(updatedUser);
+    };
+
     useEffect(() => {
         checkAuthentication();
     }, []);
@@ -65,7 +69,7 @@ function App() {
                     />
                     <Route
                         path="/profile/:userId"
-                        element={isAuthenticated ? <ProfilePage currentUser={currentUser} onLogout={handleLogout} /> : <Navigate to="/" replace />}
+                        element={isAuthenticated ? <ProfilePage currentUser={currentUser} onLogout={handleLogout} onUpdateUser={updateCurrentUser} /> : <Navigate to="/" replace />}
                     />
                     <Route
                         path="/project/:projectId"
