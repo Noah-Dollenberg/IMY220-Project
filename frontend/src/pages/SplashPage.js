@@ -37,7 +37,7 @@ const SplashPage = () => {
   const backgroundIcons = [
     {
       id: 1,
-      opacity: 0.2,
+      opacity: 0.4,
       scale: 2,
       rotation: 15,
       x: 10,
@@ -46,7 +46,7 @@ const SplashPage = () => {
     },
     {
       id: 2,
-      opacity: 0.1,
+      opacity: 0.3,
       scale: 1,
       rotation: -25,
       x: 70,
@@ -55,7 +55,7 @@ const SplashPage = () => {
     },
     {
       id: 3,
-      opacity: 0.3,
+      opacity: 0.5,
       scale: 3,
       rotation: 45,
       x: 80,
@@ -64,7 +64,7 @@ const SplashPage = () => {
     },
     {
       id: 4,
-      opacity: 0.4,
+      opacity: 0.6,
       scale: 5,
       rotation: -10,
       x: 20,
@@ -94,45 +94,42 @@ const SplashPage = () => {
             transition: 'transform 0.3s ease-out'
           }}
         >
-          <div className="w-32 h-32 text-6xl text-fill opacity-50 font-mono">&lt;/&gt;</div>
+          <div className="w-32 h-32 text-6xl text-gray-600 opacity-80 font-mono blur-sm">&lt;/&gt;</div>
         </div>
       ))}
 
-      <main className="relative z-10 min-h-screen flex items-center">
-        <div className="max-w-7xl mx-auto px-6 w-full">
-          <div className="text-left">
-            <div className="mb-8">
-              <div className="flex items-center mb-4">
-                <div className="bg-highlight text-dark px-3 py-2 rounded font-inter font-bold text-2xl mr-3">[B]</div>
-                <h1 className="font-inter text-4xl font-bold text-dark">BranchOut.</h1>
-              </div>
-              <p className="font-inter text-xl text-dark">Don't just commit.</p>
+      <main className="relative z-10 min-h-screen flex items-center justify-center">
+        <div className="max-w-4xl mx-auto px-6 w-full text-center">
+          <div className="mb-12">
+            <div className="flex items-center justify-center mb-6">
+              <div className="bg-yellow-400 text-gray-800 px-4 py-3 rounded font-bold text-3xl mr-4">[B]</div>
+              <h1 className="font-bold text-6xl text-gray-800">BranchOut.</h1>
             </div>
-            <div className="max-w-2xl">
-              <h2 className="font-khula text-lg text-darker mb-8 leading-relaxed">
-                Collaborate with teammates, track your code history, and showcase your work all in one powerful, easy-to-use platform
-              </h2>
-              <div className="flex gap-4 mb-4">
-                <button
-                  className="bg-dark text-white px-8 py-3 rounded font-inter font-medium hover:bg-darker transition-colors"
-                  onClick={openLogin}
-                >
-                  LOGIN
-                </button>
-                <button
-                  className="bg-highlight text-dark px-8 py-3 rounded font-inter font-medium hover:bg-yellow-400 transition-colors"
-                  onClick={openSignUp}
-                >
-                  SIGN UP
-                </button>
-              </div>
-              <p className="font-khula text-dark">Do it! It's Free!!</p>
+            <p className="text-2xl text-gray-800 mb-8">Don't just commit.</p>
+          </div>
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-xl text-gray-700 mb-12 leading-relaxed">
+              Collaborate with teammates, track your code history, and showcase your work all in one powerful, easy-to-use platform
+            </h2>
+            <div className="flex items-center justify-center gap-6 mb-8">
+              <button
+                className="bg-gray-800 text-white px-10 py-4 rounded font-medium hover:bg-gray-900 transition-colors text-lg"
+                onClick={openLogin}
+              >
+                LOGIN
+              </button>
+              <button
+                className="bg-yellow-400 text-gray-800 px-10 py-4 rounded font-medium hover:bg-yellow-500 transition-colors text-lg"
+                onClick={openSignUp}
+              >
+                SIGN UP
+              </button>
             </div>
-            <footer className="absolute bottom-6 left-6">
-              <p className="font-khula text-darker text-sm">&copy;BranchOut</p>
-            </footer>
           </div>
         </div>
+        <footer className="absolute bottom-6 left-6">
+          <p className="text-gray-600 text-sm">&copy;BranchOut</p>
+        </footer>
       </main>
       {(showLogin || showSignUp) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={closeModals}>

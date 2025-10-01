@@ -698,8 +698,33 @@ app.post('/api/friends/request', checkUser, async (req, res) => {
         const userRequests = req.user.friendRequests || { sent: [], received: [] };
         const targetRequests = targetUser.friendRequests || { sent: [], received: [] };
 
-        if (userRequests.sent.some(id => id.toString() === userId) || 
-            targetRequests.received.some(id => id.toString() === req.user._id.toString())) {
+        // Check if target user already sent a request to current user (mutual request)
+        if (targetRequests.sent.some(id => id.toString() === req.user._id.toString()) ||
+            userRequests.received.some(id => id.toString() === userId)) {
+            // Mutual friend request - make them friends immediately
+            await db.collection('users').updateOne(
+                { _id: req.user._id },
+                { 
+                    $pull: { 'friendRequests.received': new ObjectId(userId) },
+                    $addToSet: { friends: new ObjectId(userId) }
+                }
+            );
+
+            await db.collection('users').updateOne(
+                { _id: new ObjectId(userId) },
+                { 
+                    $pull: { 'friendRequests.sent': req.user._id },
+                    $addToSet: { friends: req.user._id }
+                }
+            );
+
+            return res.json({
+                success: true,
+                message: 'You are now friends!'
+            });
+        }
+
+        if (userRequests.sent.some(id => id.toString() === userId)) {
             return res.status(400).json({
                 success: false,
                 message: 'Request already sent'

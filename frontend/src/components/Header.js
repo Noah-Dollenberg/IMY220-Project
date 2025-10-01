@@ -1,12 +1,33 @@
 // NJ (Noah) Dollenberg u24596142 41
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { authAPI } from '../services/api';
+import { authAPI, friendsAPI, projectsAPI } from '../services/api';
 
 const Header = ({ currentUser, onLogout }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [hoverTimeout, setHoverTimeout] = useState(null);
+    const [notificationCount, setNotificationCount] = useState(0);
+
+    useEffect(() => {
+        if (currentUser) {
+            loadNotifications();
+        }
+    }, [currentUser]);
+
+    const loadNotifications = async () => {
+        try {
+            const [friendRequests, projectInvitations] = await Promise.all([
+                friendsAPI.getRequests(),
+                projectsAPI.getInvitations()
+            ]);
+            const total = (friendRequests.requests?.length || 0) + (projectInvitations.invitations?.length || 0);
+            setNotificationCount(total);
+        } catch (error) {
+            console.error('Failed to load notifications:', error);
+        }
+    };
 
     const handleLogout = () => {
         authAPI.logout();
@@ -35,13 +56,18 @@ const Header = ({ currentUser, onLogout }) => {
                         </Link>
                         <Link
                             to={`/profile/${currentUser?._id}`}
-                            className={`font-khula text-sm font-medium ${
+                            className={`font-khula text-sm font-medium relative ${
                                 location.pathname.startsWith('/profile') 
                                     ? 'text-dark' 
                                     : 'text-darker hover:text-dark'
                             }`}
                         >
                             Profile
+                            {notificationCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                    {notificationCount > 9 ? '9+' : notificationCount}
+                                </span>
+                            )}
                         </Link>
                         <Link
                             to="/search"
@@ -59,11 +85,18 @@ const Header = ({ currentUser, onLogout }) => {
                         >
                             Create Project
                         </Link>
-                        <div className="relative">
-                            <div 
-                                className="w-8 h-8 bg-fill rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors"
-                                onClick={() => setShowUserMenu(!showUserMenu)}
-                            >
+                        <div 
+                            className="relative"
+                            onMouseEnter={() => {
+                                if (hoverTimeout) clearTimeout(hoverTimeout);
+                                setShowUserMenu(true);
+                            }}
+                            onMouseLeave={() => {
+                                const timeout = setTimeout(() => setShowUserMenu(false), 1500);
+                                setHoverTimeout(timeout);
+                            }}
+                        >
+                            <div className="w-8 h-8 bg-fill rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
                                 {currentUser?.profilePicture ? (
                                     <img 
                                         src={currentUser.profilePicture} 
@@ -77,7 +110,7 @@ const Header = ({ currentUser, onLogout }) => {
                             {showUserMenu && (
                                 <div className="absolute right-0 mt-2 w-48 bg-white rounded shadow-lg py-1 z-50 border border-fill">
                                     <div className="px-4 py-2 text-sm text-dark border-b border-fill font-khula">
-                                        <span className="font-medium">{currentUser?.name || 'User'}</span>
+                                        <span className="font-bold">{currentUser?.name || 'User'}</span>
                                     </div>
                                     <button 
                                         onClick={handleLogout}

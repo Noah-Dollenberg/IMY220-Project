@@ -147,8 +147,8 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
 
             <main className="py-8">
                 <div className="max-w-7xl mx-auto px-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                        <div className="lg:col-span-1 space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-1 space-y-6 lg:min-w-80">
                             <div className="bg-white rounded p-6">
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="w-20 h-20 bg-highlight rounded-full flex items-center justify-center flex-shrink-0">
@@ -327,10 +327,11 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                 </div>
                                                 {friend._id !== currentUser._id && (
                                                     <button 
-                                                        className="bg-fill text-dark px-3 py-1 rounded font-khula text-xs hover:bg-accent transition-colors"
+                                                        className="bg-fill text-dark px-2 py-1 rounded font-khula text-xs hover:bg-accent transition-colors leading-tight"
                                                         onClick={() => navigate(`/profile/${friend._id}`)}
                                                     >
-                                                        View Profile
+                                                        <div>View</div>
+                                                        <div>Profile</div>
                                                     </button>
                                                 )}
                                             </div>
@@ -344,7 +345,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                             </div>
                         </div>
 
-                        <div className="lg:col-span-3">
+                        <div className="lg:col-span-2">
                             <div className="bg-white rounded p-6">
                                 <div className="mb-6">
                                     <h2 className="font-inter text-2xl font-bold text-dark mb-1">Projects</h2>
