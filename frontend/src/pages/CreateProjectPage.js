@@ -1,9 +1,9 @@
 // NJ (Noah) Dollenberg u24596142 41
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import InviteFriendsModal from '../components/InviteFriendsModal';
-import { projectsAPI } from '../services/api';
+import { projectsAPI, friendsAPI } from '../services/api';
 
 const CreateProjectPage = ({ currentUser, onLogout }) => {
     const navigate = useNavigate();
@@ -12,7 +12,8 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
         description: '',
         language: 'JavaScript',
         version: '1.0.0',
-        isPublic: true
+        isPublic: true,
+        profilePicture: null
     });
 
     const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -20,6 +21,28 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
     const [errors, setErrors] = useState({});
     const [showInviteFriends, setShowInviteFriends] = useState(false);
     const [createdProjectId, setCreatedProjectId] = useState(null);
+    const [friends, setFriends] = useState([]);
+    const [selectedFriends, setSelectedFriends] = useState([]);
+    const [previewImage, setPreviewImage] = useState(null);
+    const [imageDragActive, setImageDragActive] = useState(false);
+
+    useEffect(() => {
+        const fetchFriends = async () => {
+            try {
+                const userId = currentUser._id || currentUser.id;
+                console.log('Fetching friends for user:', userId);
+                const friendsData = await friendsAPI.getFriends(userId);
+                console.log('Friends data received:', friendsData);
+                setFriends(friendsData.friends || []);
+            } catch (error) {
+                console.error('Failed to fetch friends:', error);
+            }
+        };
+        
+        if (currentUser?._id || currentUser?.id) {
+            fetchFriends();
+        }
+    }, [currentUser]);
 
     const validateForm = () => {
         const newErrors = {};
@@ -98,6 +121,96 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
         setUploadedFiles(prev => [...prev, ...fileArray]);
     };
 
+    const handleImageUpload = (file) => {
+        if (file && file.type.startsWith('image/')) {
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Image must be smaller than 10MB');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const maxSize = 150;
+                    let { width, height } = img;
+                    
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = (height * maxSize) / width;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = (width * maxSize) / height;
+                            height = maxSize;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 1);
+                    setPreviewImage(compressedDataUrl);
+                    setFormData(prev => ({
+                        ...prev,
+                        profilePicture: compressedDataUrl
+                    }));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleImageFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            handleImageUpload(file);
+        }
+    };
+
+    const handleImageDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setImageDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setImageDragActive(false);
+        }
+    };
+
+    const handleImageDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setImageDragActive(false);
+
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            handleImageUpload(file);
+        }
+    };
+
+    const removeImage = () => {
+        setPreviewImage(null);
+        setFormData(prev => ({
+            ...prev,
+            profilePicture: null
+        }));
+    };
+
+    const toggleFriendSelection = (friendId) => {
+        setSelectedFriends(prev => 
+            prev.includes(friendId) 
+                ? prev.filter(id => id !== friendId)
+                : [...prev, friendId]
+        );
+    };
+
     const removeFile = (fileId) => {
         setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
     };
@@ -124,32 +237,34 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                     name: file.name,
                     size: file.size,
                     type: file.type
-                }))
+                })),
+                invitedFriends: selectedFriends
             };
 
             const response = await projectsAPI.create(projectData);
             setCreatedProjectId(response.projectId);
-            alert('Project created successfully!');
             
-            // Ask if user wants to invite friends
-            const inviteFriends = window.confirm('Would you like to invite friends to collaborate on this project?');
-            if (inviteFriends) {
-                setShowInviteFriends(true);
+            // Send invitations to selected friends
+            if (selectedFriends.length > 0) {
+                try {
+                    await Promise.all(
+                        selectedFriends.map(friendId => 
+                            projectsAPI.sendInvitation(response.projectId, friendId)
+                        )
+                    );
+                    alert(`Project created successfully! Invitations sent to ${selectedFriends.length} friend${selectedFriends.length !== 1 ? 's' : ''}.`);
+                } catch (inviteError) {
+                    console.error('Invitation error:', inviteError);
+                    alert('Project created successfully, but some invitations failed to send.');
+                }
             } else {
-                navigate('/home');
+                alert('Project created successfully!');
             }
+            
+            navigate('/home');
         } catch (error) {
             alert('Failed to create project: ' + error.message);
         }
-    };
-
-    const handleInviteSent = () => {
-        // Invitation sent successfully
-    };
-
-    const handleCloseInviteModal = () => {
-        setShowInviteFriends(false);
-        navigate('/home');
     };
 
     return (
@@ -164,6 +279,59 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-8">
+                            <div>
+                                <h3 className="font-inter text-lg font-semibold text-dark mb-4">Project Profile Picture</h3>
+                                <div className="flex flex-col items-center space-y-4">
+                                    <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                                        {previewImage ? (
+                                            <img src={previewImage} alt="Project Preview" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full bg-highlight flex items-center justify-center text-dark text-2xl font-bold">
+                                                <span>
+                                                    {formData.name?.charAt(0) || 'P'}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div
+                                        className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                                            imageDragActive ? 'border-highlight bg-yellow-50' : 'border-fill'
+                                        }`}
+                                        onDragEnter={handleImageDrag}
+                                        onDragLeave={handleImageDrag}
+                                        onDragOver={handleImageDrag}
+                                        onDrop={handleImageDrop}
+                                    >
+                                        <div className="space-y-2">
+                                            <div className="text-2xl">📷</div>
+                                            <p className="font-khula text-sm text-darker">Drag & drop an image here</p>
+                                            <p className="font-khula text-sm text-darker">or</p>
+                                            <input
+                                                type="file"
+                                                id="project-picture-input"
+                                                accept="image/*"
+                                                onChange={handleImageFileChange}
+                                                className="hidden"
+                                            />
+                                            <label htmlFor="project-picture-input" className="inline-block px-4 py-2 bg-fill text-dark rounded font-khula hover:bg-accent cursor-pointer">
+                                                Choose Image
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {previewImage && (
+                                        <button
+                                            type="button"
+                                            className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm font-khula hover:bg-red-200"
+                                            onClick={removeImage}
+                                        >
+                                            Remove Image
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
                             <div>
                                 <h3 className="font-inter text-lg font-semibold text-dark mb-4">Project Files</h3>
                                 <div
@@ -329,13 +497,58 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
 
                             <div>
                                 <h3 className="font-inter text-lg font-semibold text-dark mb-2">Invite Friends (Optional)</h3>
-                                <p className="font-khula text-darker mb-4">You can invite friends to collaborate on this project after creation, or skip this step for now.</p>
-                                <div className="p-4 bg-accent border border-fill rounded">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-2xl">👥</span>
-                                        <span className="font-khula text-dark">Invite friends after project creation</span>
+                                <p className="font-khula text-darker mb-4">Select friends to invite to collaborate on this project.</p>
+                                
+                                {friends.length > 0 ? (
+                                    <div className="border border-fill rounded">
+                                        <div className={`space-y-2 p-4 ${friends.length > 3 ? 'max-h-48 overflow-y-auto' : ''}`}>
+                                            {friends.map((friend) => (
+                                                <div key={friend.id} className="flex items-center justify-between p-3 bg-accent rounded border border-fill">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                                                            {friend.profilePicture ? (
+                                                                <img src={friend.profilePicture} alt={friend.name} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <div className="w-full h-full bg-highlight flex items-center justify-center text-dark text-sm font-bold">
+                                                                    {friend.name?.charAt(0) || 'U'}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-khula font-medium text-dark">{friend.name}</div>
+                                                            <div className="font-khula text-sm text-darker">{friend.email}</div>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className={`px-4 py-2 rounded font-khula transition-colors ${
+                                                            selectedFriends.includes(friend.id)
+                                                                ? 'bg-highlight text-dark hover:bg-yellow-400'
+                                                                : 'bg-fill text-dark hover:bg-accent'
+                                                        }`}
+                                                        onClick={() => toggleFriendSelection(friend.id)}
+                                                    >
+                                                        {selectedFriends.includes(friend.id) ? 'Invited' : 'Invite'}
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {selectedFriends.length > 0 && (
+                                            <div className="p-3 bg-yellow-50 border-t border-fill">
+                                                <p className="font-khula text-sm text-darker">
+                                                    {selectedFriends.length} friend{selectedFriends.length !== 1 ? 's' : ''} will be invited
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="p-4 bg-accent border border-fill rounded">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-2xl">👥</span>
+                                            <span className="font-khula text-dark">No friends to invite yet</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex gap-4 pt-6">
@@ -358,13 +571,7 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                 </div>
             </main>
 
-            {showInviteFriends && createdProjectId && (
-                <InviteFriendsModal
-                    projectId={createdProjectId}
-                    onClose={handleCloseInviteModal}
-                    onInviteSent={handleInviteSent}
-                />
-            )}
+
         </div>
     );
 };
