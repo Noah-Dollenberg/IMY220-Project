@@ -119,25 +119,25 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
     };
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content edit-profile-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>Edit Profile</h2>
-                    <button className="modal-close" onClick={onClose}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-6 border-b">
+                    <h2 className="text-xl font-semibold">Edit Profile</h2>
+                    <button className="text-gray-500 hover:text-gray-700 text-2xl" onClick={onClose}>
                         &times;
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="edit-profile-form">
-                    <div className="form-group profile-picture-section">
-                        <label className="form-label">Profile Picture</label>
-                        <div className="profile-picture-container">
-                            <div className="current-picture">
+                <form onSubmit={handleSubmit} className="p-6">
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+                        <div className="flex flex-col items-center space-y-4">
+                            <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                                 {previewImage ? (
-                                    <img src={previewImage} alt="Profile Preview" className="profile-preview" />
+                                    <img src={previewImage} alt="Profile Preview" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="profile-placeholder">
-                                        <span className="placeholder-text">
+                                    <div className="w-full h-full bg-yellow-400 flex items-center justify-center text-white text-2xl font-bold">
+                                        <span>
                                             {formData.name?.charAt(0) || 'U'}
                                         </span>
                                     </div>
@@ -145,24 +145,26 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
                             </div>
 
                             <div
-                                className={`image-upload-area ${dragActive ? 'drag-active' : ''}`}
+                                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                                    dragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300'
+                                }`}
                                 onDragEnter={handleDrag}
                                 onDragLeave={handleDrag}
                                 onDragOver={handleDrag}
                                 onDrop={handleDrop}
                             >
-                                <div className="upload-content">
-                                    <div className="upload-icon">📷</div>
-                                    <p>Drag & drop an image here</p>
-                                    <p>or</p>
+                                <div className="space-y-2">
+                                    <div className="text-2xl">📷</div>
+                                    <p className="text-sm text-gray-600">Drag & drop an image here</p>
+                                    <p className="text-sm text-gray-600">or</p>
                                     <input
                                         type="file"
                                         id="profile-picture-input"
                                         accept="image/*"
                                         onChange={handleFileInput}
-                                        className="file-input"
+                                        className="hidden"
                                     />
-                                    <label htmlFor="profile-picture-input" className="btn btn-secondary btn-small">
+                                    <label htmlFor="profile-picture-input" className="inline-block px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 cursor-pointer">
                                         Choose Image
                                     </label>
                                 </div>
@@ -171,7 +173,7 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
                             {previewImage && (
                                 <button
                                     type="button"
-                                    className="btn btn-secondary btn-small remove-image-btn"
+                                    className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
                                     onClick={removeImage}
                                 >
                                     Remove Image
@@ -180,76 +182,76 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
                         </div>
                     </div>
 
-                    <div className="form-grid">
-                        <div className="form-group">
-                            <label htmlFor="name" className="form-label">Name</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                             <input
                                 type="text"
                                 id="name"
                                 name="name"
-                                className="form-input"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 value={formData.name}
                                 onChange={handleInputChange}
                                 placeholder="Your full name"
                             />
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="email" className="form-label">Email</label>
+                        <div>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                             <input
                                 type="email"
                                 id="email"
                                 name="email"
-                                className="form-input"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 value={formData.email}
                                 onChange={handleInputChange}
                                 placeholder="your.email@example.com"
                             />
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="company" className="form-label">Company</label>
+                        <div>
+                            <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">Company</label>
                             <input
                                 type="text"
                                 id="company"
                                 name="company"
-                                className="form-input"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 value={formData.company}
                                 onChange={handleInputChange}
                                 placeholder="Company name"
                             />
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="country" className="form-label">Country</label>
+                        <div>
+                            <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">Country</label>
                             <input
                                 type="text"
                                 id="country"
                                 name="country"
-                                className="form-input"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 value={formData.country}
                                 onChange={handleInputChange}
                                 placeholder="Your country"
                             />
                         </div>
 
-                        <div className="form-group full-width">
-                            <label htmlFor="birthDate" className="form-label">Birth Date</label>
+                        <div className="md:col-span-2">
+                            <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
                             <input
                                 type="date"
                                 id="birthDate"
                                 name="birthDate"
-                                className="form-input"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 value={formData.birthDate}
                                 onChange={handleInputChange}
                             />
                         </div>
                     </div>
 
-                    <div className="form-actions">
+                    <div className="flex justify-end space-x-3 pt-6 border-t">
                         <button
                             type="button"
-                            className="btn btn-secondary"
+                            className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
                             onClick={onClose}
                             disabled={saving}
                         >
@@ -257,7 +259,7 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
                         </button>
                         <button
                             type="submit"
-                            className="btn btn-primary"
+                            className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50"
                             disabled={saving}
                         >
                             {saving ? 'Saving...' : 'Save Changes'}

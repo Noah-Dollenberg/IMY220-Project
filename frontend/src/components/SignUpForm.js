@@ -145,97 +145,108 @@ const SignUpForm = () => {
     const passwordStrength = formData.password ? validatePassword(formData.password) : null;
 
     return (
-        <div className="signup-form">
-            <div className="form-header">
-                <h2>OPEN THE FIRST</h2>
-                <h3>[B]RANCH</h3>
+        <div className="p-6">
+            <div className="text-center mb-6">
+                <h2 className="font-inter text-xl font-bold text-dark">OPEN THE FIRST</h2>
+                <h3 className="font-inter text-xl font-bold text-dark">[B]RANCH</h3>
             </div>
 
-            <form onSubmit={handleSubmit} noValidate>
-                <div className="form-group">
-                    <label htmlFor="email" className="form-label">Email</label>
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
+                <div>
+                    <label htmlFor="email" className="block font-khula text-sm font-medium text-dark mb-1">Email</label>
                     <input
                         type="email"
                         id="email"
                         name="email"
-                        className={`form-input ${errors.email ? 'error' : ''}`}
+                        className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${
+                            errors.email ? 'border-red-500' : 'border-fill'
+                        }`}
                         value={formData.email}
                         onChange={handleInputChange}
                         placeholder="email@example.com"
                         required
                     />
-                    {errors.email && <div className="error-message">{errors.email}</div>}
+                    {errors.email && <div className="text-red-500 text-sm mt-1 font-khula">{errors.email}</div>}
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="password" className="form-label">Password</label>
+                <div>
+                    <label htmlFor="password" className="block font-khula text-sm font-medium text-dark mb-1">Password</label>
                     <input
                         type="password"
                         id="password"
                         name="password"
-                        className={`form-input ${errors.password ? 'error' : ''}`}
+                        className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${
+                            errors.password ? 'border-red-500' : 'border-fill'
+                        }`}
                         value={formData.password}
                         onChange={handleInputChange}
                         placeholder="************"
                         required
                     />
                     {formData.password && passwordStrength && (
-                        <div className="password-strength">
-                            <div className={`strength-indicator ${passwordStrength.minLength ? 'valid' : 'invalid'}`}>
+                        <div className="mt-2 space-y-1">
+                            <div className={`text-xs font-khula ${
+                                passwordStrength.minLength ? 'text-green-600' : 'text-red-500'
+                            }`}>
                                 {passwordStrength.minLength ? '✓' : '✗'} At least 8 characters
                             </div>
-                            <div className={`strength-indicator ${passwordStrength.hasUpper ? 'valid' : 'invalid'}`}>
+                            <div className={`text-xs font-khula ${
+                                passwordStrength.hasUpper ? 'text-green-600' : 'text-red-500'
+                            }`}>
                                 {passwordStrength.hasUpper ? '✓' : '✗'} Uppercase letter
                             </div>
-                            <div className={`strength-indicator ${passwordStrength.hasLower ? 'valid' : 'invalid'}`}>
+                            <div className={`text-xs font-khula ${
+                                passwordStrength.hasLower ? 'text-green-600' : 'text-red-500'
+                            }`}>
                                 {passwordStrength.hasLower ? '✓' : '✗'} Lowercase letter
                             </div>
-                            <div className={`strength-indicator ${passwordStrength.hasNumber ? 'valid' : 'invalid'}`}>
+                            <div className={`text-xs font-khula ${
+                                passwordStrength.hasNumber ? 'text-green-600' : 'text-red-500'
+                            }`}>
                                 {passwordStrength.hasNumber ? '✓' : '✗'} Number
                             </div>
                         </div>
                     )}
-                    {errors.password && <div className="error-message">{errors.password}</div>}
+                    {errors.password && <div className="text-red-500 text-sm mt-1 font-khula">{errors.password}</div>}
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+                <div>
+                    <label htmlFor="confirmPassword" className="block font-khula text-sm font-medium text-dark mb-1">Confirm Password</label>
                     <input
                         type="password"
                         id="confirmPassword"
                         name="confirmPassword"
-                        className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
+                        className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${
+                            errors.confirmPassword ? 'border-red-500' : 'border-fill'
+                        }`}
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
                         placeholder="************"
                         required
                     />
-                    {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
+                    {errors.confirmPassword && <div className="text-red-500 text-sm mt-1 font-khula">{errors.confirmPassword}</div>}
                 </div>
 
-                <div className="form-group checkbox-group">
-                    <label className="checkbox-label">
+                <div>
+                    <label className="flex items-center font-khula text-sm text-dark">
                         <input
                             type="checkbox"
                             checked={isRobotChecked}
                             onChange={handleRobotCheck}
-                            className="checkbox-input"
+                            className="mr-2"
                         />
-                        <span className="checkmark">
-                            {isRobotChecked && '✓'}
-                        </span>
                         I'm not a robot
                     </label>
-                    {errors.robot && <div className="error-message">{errors.robot}</div>}
+                    {errors.robot && <div className="text-red-500 text-sm mt-1 font-khula">{errors.robot}</div>}
                 </div>
 
                 {errors.submit && (
-                    <div className="error-message submit-error">{errors.submit}</div>
+                    <div className="text-red-500 text-sm font-khula">{errors.submit}</div>
                 )}
 
                 <button
                     type="submit"
-                    className="btn btn-dark btn-full"
+                    className="w-full bg-dark text-white py-3 rounded font-inter font-medium hover:bg-darker transition-colors disabled:opacity-50"
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? 'CREATING ACCOUNT...' : "LET'S CODE"}

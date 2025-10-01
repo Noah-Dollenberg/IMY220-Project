@@ -15,37 +15,39 @@ const ProjectPreview = ({ project, showContributors = false, showActivity = true
     };
 
     return (
-        <div className="project-preview">
-            <div className="project-main">
-                <div className="project-info">
-                    <div className="project-header">
-                        <div className="project-owner">
-                            <div className="owner-avatar">{project.owner.avatar}</div>
-                        </div>
-                        <div className="project-details">
-                            <Link to={`/project/${project.id}`} className="project-name">
-                                {project.name}
-                            </Link>
-                            <p className="project-description">{project.description}</p>
-                            <span className="project-time">{project.lastUpdate}</span>
-                        </div>
+        <div className="bg-accent border border-fill rounded p-4 hover:bg-white transition-all cursor-pointer">
+            <div className="flex justify-between items-center gap-4">
+                <div className="flex gap-3 items-start flex-1">
+                    <div className="w-10 h-10 bg-highlight rounded-full flex items-center justify-center text-dark font-inter font-semibold text-sm flex-shrink-0">
+                        {project.owner.avatar}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <Link 
+                            to={`/project/${project.id}`} 
+                            className="font-inter font-semibold text-dark hover:text-darker transition-colors block mb-1"
+                        >
+                            {project.name}
+                        </Link>
+                        <p className="font-khula text-darker text-sm mb-1">{project.description}</p>
+                        <span className="font-khula text-xs text-darker">{project.lastUpdate}</span>
                     </div>
                 </div>
 
-                <div className="project-status">
+                <div className="flex items-center gap-2 flex-shrink-0">
                     <div
-                        className="status-indicator"
-                        style={{ backgroundColor: getStatusColor(project.status) }}
+                        className={`w-3 h-3 rounded-full ${
+                            project.status === 'checked-in' ? 'bg-green-500' : 'bg-red-500'
+                        }`}
                     ></div>
-                    <span className="status-text">{project.status}</span>
+                    <span className="font-khula text-sm text-darker capitalize">{project.status}</span>
                 </div>
 
                 {showContributors && (
-                    <div className="project-contributors">
-                        <span className="contributors-count">
+                    <div className="text-center flex-shrink-0">
+                        <div className="font-inter text-lg font-bold text-dark">
                             {formatContributors(project.contributors)}
-                        </span>
-                        <span className="contributors-label">contributors</span>
+                        </div>
+                        <div className="font-khula text-xs text-darker">contributors</div>
                     </div>
                 )}
             </div>

@@ -49,15 +49,15 @@ function App() {
 
     if (isLoading) {
         return (
-            <div className="loading-screen">
-                <div className="loading-spinner">Loading...</div>
+            <div className="flex items-center justify-center min-h-screen bg-accent">
+                <div className="font-khula text-dark text-lg">Loading...</div>
             </div>
         );
     }
 
     return (
         <BrowserRouter>
-            <div className="app">
+            <div className="min-h-screen bg-accent">
                 <Routes>
                     <Route
                         path="/"

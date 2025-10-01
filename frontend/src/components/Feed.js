@@ -54,81 +54,91 @@ const Feed = ({ feedType = 'local' }) => {
 
     if (loading) {
         return (
-            <div className="feed loading">
-                <div className="loading-message">Loading projects...</div>
+            <div className="flex justify-center py-8">
+                <div className="font-khula text-darker">Loading projects...</div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="feed error">
-                <div className="error-message">
+            <div className="bg-white border border-fill rounded p-4">
+                <div className="font-khula text-dark mb-2">
                     Error loading feed: {error}
-                    <button onClick={handleRefresh} className="btn btn-secondary">
-                        Try Again
-                    </button>
                 </div>
+                <button 
+                    onClick={handleRefresh} 
+                    className="bg-highlight text-dark px-4 py-2 rounded font-khula hover:bg-yellow-400 transition-colors"
+                >
+                    Try Again
+                </button>
             </div>
         );
     }
 
     return (
-        <div className="feed">
-            <div className="feed-header">
-                <h2 className="feed-title">
-                    [{feedType === 'local' ? 'L' : 'G'}] {feedType.toUpperCase()} FEED
-                </h2>
+        <div className="bg-white rounded p-6">
+            <h2 className="font-inter text-lg font-bold text-dark mb-6">
+                [{feedType === 'local' ? 'L' : 'G'}] {feedType.toUpperCase()} FEED
+            </h2>
 
-                <div className="feed-controls">
-                    <div className="search-control">
-                        <input
-                            type="text"
-                            placeholder="Search for project..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="search-input"
-                        />
-                    </div>
+            <div className="space-y-4 mb-6">
+                <input
+                    type="text"
+                    placeholder="Search for project..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full px-4 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
+                />
 
-                    <div className="filter-controls">
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="sort-select"
+                <div className="flex flex-wrap gap-4 items-center">
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
+                    >
+                        <option value="latest">Sort by Latest</option>
+                        <option value="contributors">Sort by Contributors</option>
+                    </select>
+
+                    <div className="flex gap-2">
+                        <button
+                            className={`px-3 py-2 rounded font-khula text-sm transition-colors ${
+                                filterBy === 'checked-in' 
+                                    ? 'bg-green-500 text-white' 
+                                    : 'bg-fill text-dark hover:bg-accent'
+                            }`}
+                            onClick={() => setFilterBy(filterBy === 'checked-in' ? 'all' : 'checked-in')}
                         >
-                            <option value="latest">Sort by Latest</option>
-                            <option value="contributors">Sort by Contributors</option>
-                        </select>
-
-                        <div className="status-filters">
-                            <button
-                                className={`filter-btn ${filterBy === 'checked-in' ? 'active' : ''}`}
-                                onClick={() => setFilterBy(filterBy === 'checked-in' ? 'all' : 'checked-in')}
-                            >
-                                Checked-In
-                            </button>
-                            <button
-                                className={`filter-btn ${filterBy === 'checked-out' ? 'active' : ''}`}
-                                onClick={() => setFilterBy(filterBy === 'checked-out' ? 'all' : 'checked-out')}
-                            >
-                                Checked-Out
-                            </button>
-                        </div>
-
-                        <button onClick={handleRefresh} className="refresh-btn">
-                            Refresh
+                            Checked-In
+                        </button>
+                        <button
+                            className={`px-3 py-2 rounded font-khula text-sm transition-colors ${
+                                filterBy === 'checked-out' 
+                                    ? 'bg-red-500 text-white' 
+                                    : 'bg-fill text-dark hover:bg-accent'
+                            }`}
+                            onClick={() => setFilterBy(filterBy === 'checked-out' ? 'all' : 'checked-out')}
+                        >
+                            Checked-Out
                         </button>
                     </div>
+
+                    <button 
+                        onClick={handleRefresh} 
+                        className="px-4 py-2 bg-highlight text-dark rounded font-khula hover:bg-yellow-400 transition-colors"
+                    >
+                        Refresh
+                    </button>
                 </div>
             </div>
 
-            <div className="feed-content">
+            <div>
                 {feedType === 'local' && (
-                    <div className="feed-sections">
-                        <div className="available-projects">
-                            <h3>AVAILABLE PROJECTS ({filteredProjects.length})</h3>
-                            <div className="projects-list">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h3 className="font-inter text-base font-bold text-dark mb-4">AVAILABLE PROJECTS ({filteredProjects.length})</h3>
+                            <div className="space-y-3">
                                 {filteredProjects.length > 0 ? (
                                     filteredProjects.map(project => (
                                         <ProjectPreview
@@ -149,33 +159,33 @@ const Feed = ({ feedType = 'local' }) => {
                                         />
                                     ))
                                 ) : (
-                                    <div className="empty-state">
+                                    <div className="text-center py-8 font-khula text-darker">
                                         <p>No projects found</p>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="activity-feed">
-                            <h3>ACTIVITY ({activities.length})</h3>
-                            <div className="activity-list">
+                        <div>
+                            <h3 className="font-inter text-base font-bold text-dark mb-4">ACTIVITY ({activities.length})</h3>
+                            <div className="space-y-3">
                                 {activities.length > 0 ? (
                                     activities.map(activity => (
-                                        <div key={activity._id} className="activity-item">
-                                            <div className="activity-avatar">
+                                        <div key={activity._id} className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-highlight rounded-full flex items-center justify-center text-dark font-inter font-medium text-sm">
                                                 {activity.userInfo?.name?.charAt(0) || 'U'}
                                             </div>
-                                            <div className="activity-content">
-                                                <strong>{activity.projectInfo?.name}</strong>
-                                                <p>{activity.message}</p>
-                                                <span className="activity-time">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-inter font-semibold text-dark">{activity.projectInfo?.name}</div>
+                                                <p className="font-khula text-darker text-sm">{activity.message}</p>
+                                                <span className="font-khula text-xs text-darker">
                                                     {new Date(activity.timestamp).toLocaleDateString()}
                                                 </span>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="empty-state">
+                                    <div className="text-center py-8 font-khula text-darker">
                                         <p>No activity yet</p>
                                     </div>
                                 )}
@@ -185,9 +195,9 @@ const Feed = ({ feedType = 'local' }) => {
                 )}
 
                 {feedType === 'global' && (
-                    <div className="available-projects">
-                        <h3>AVAILABLE PROJECTS ({filteredProjects.length})</h3>
-                        <div className="projects-list">
+                    <div>
+                        <h3 className="font-inter text-base font-bold text-dark mb-4">AVAILABLE PROJECTS ({filteredProjects.length})</h3>
+                        <div className="space-y-3">
                             {filteredProjects.length > 0 ? (
                                 filteredProjects.map(project => (
                                     <ProjectPreview
@@ -208,7 +218,7 @@ const Feed = ({ feedType = 'local' }) => {
                                     />
                                 ))
                             ) : (
-                                <div className="empty-state">
+                                <div className="text-center py-8 font-khula text-darker">
                                     <p>No projects found</p>
                                 </div>
                             )}

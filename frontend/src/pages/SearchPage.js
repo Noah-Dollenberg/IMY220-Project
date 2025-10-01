@@ -68,56 +68,58 @@ const SearchPage = ({ currentUser, onLogout }) => {
     };
 
     return (
-        <div className="search-page">
+        <div className="min-h-screen bg-accent">
             <Header currentUser={currentUser} onLogout={onLogout} />
             
-            <main className="search-content">
-                <div className="container">
-                    <div className="search-container">
-                        <h1>Find Users</h1>
+            <main className="py-8">
+                <div className="max-w-6xl mx-auto px-6">
+                    <div className="bg-white rounded p-6">
+                        <h1 className="font-inter text-2xl font-bold text-dark mb-6">Find Users</h1>
                         
-                        <div className="search-form">
-                            <div className="search-input-group">
+                        <div className="mb-6">
+                            <div className="relative">
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={handleInputChange}
                                     placeholder="Search by name or email..."
-                                    className="form-input"
+                                    className="w-full px-4 py-3 border border-fill rounded-lg font-khula focus:outline-none focus:border-highlight"
                                 />
-                                {loading && <span className="search-loading">Searching...</span>}
+                                {loading && <span className="absolute right-3 top-3 font-khula text-sm text-darker">Searching...</span>}
                             </div>
                         </div>
 
-                        <div className="search-results">
+                        <div>
                             {loading ? (
-                                <div className="loading-message">Loading users...</div>
+                                <div className="text-center py-8 font-khula text-darker">Loading users...</div>
                             ) : filteredUsers.length > 0 ? (
-                                <div className="users-grid">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {filteredUsers.map(user => (
-                                        <div key={user._id} className="user-card">
-                                            <div className="user-avatar">
-                                                {user.profilePicture ? (
-                                                    <img src={user.profilePicture} alt="Profile" className="avatar-image" />
-                                                ) : (
-                                                    <div className="default-avatar">👤</div>
-                                                )}
+                                        <div key={user._id} className="bg-accent border border-fill rounded-lg p-4">
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <div className="w-12 h-12 bg-highlight rounded-full flex items-center justify-center flex-shrink-0">
+                                                    {user.profilePicture ? (
+                                                        <img src={user.profilePicture} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
+                                                    ) : (
+                                                        <span className="text-dark text-lg">👤</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="font-inter font-semibold text-dark truncate">{user.name}</h3>
+                                                    <p className="font-khula text-sm text-darker truncate">{user.email}</p>
+                                                    {user.company && <p className="font-khula text-sm text-darker truncate">{user.company}</p>}
+                                                </div>
                                             </div>
-                                            <div className="user-info">
-                                                <h3>{user.name}</h3>
-                                                <p>{user.email}</p>
-                                                {user.company && <p>{user.company}</p>}
-                                            </div>
-                                            <div className="user-actions">
+                                            <div className="flex gap-2">
                                                 <button 
-                                                    className="btn btn-primary btn-small"
+                                                    className="flex-1 bg-highlight text-dark px-3 py-2 rounded font-khula text-sm hover:bg-yellow-400 transition-colors"
                                                     onClick={() => navigate(`/profile/${user._id}`)}
                                                 >
                                                     View Profile
                                                 </button>
                                                 {user._id !== currentUser._id && !isFriend(user._id) && (
                                                     <button 
-                                                        className="btn btn-secondary btn-small"
+                                                        className="flex-1 bg-fill text-dark px-3 py-2 rounded font-khula text-sm hover:bg-accent transition-colors"
                                                         onClick={() => sendFriendRequest(user._id)}
                                                     >
                                                         Add Friend
@@ -128,7 +130,7 @@ const SearchPage = ({ currentUser, onLogout }) => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="empty-state">
+                                <div className="text-center py-8 font-khula text-darker">
                                     <p>{searchQuery ? `No users found matching "${searchQuery}"` : 'No users found'}</p>
                                 </div>
                             )}

@@ -105,66 +105,67 @@ const LoginForm = () => {
     };
 
     return (
-        <div className="login-form">
-            <div className="form-header">
-                <h2>WELCOME</h2>
-                <h3>[B]ACK!</h3>
+        <div className="p-6">
+            <div className="text-center mb-6">
+                <h2 className="font-inter text-2xl font-bold text-dark">WELCOME</h2>
+                <h3 className="font-inter text-xl font-bold text-dark">[B]ACK!</h3>
             </div>
 
-            <form onSubmit={handleSubmit} noValidate>
-                <div className="form-group">
-                    <label htmlFor="email" className="form-label">Email</label>
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
+                <div>
+                    <label htmlFor="email" className="block font-khula text-sm font-medium text-dark mb-1">Email</label>
                     <input
                         type="email"
                         id="email"
                         name="email"
-                        className={`form-input ${errors.email ? 'error' : ''}`}
+                        className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${
+                            errors.email ? 'border-red-500' : 'border-fill'
+                        }`}
                         value={formData.email}
                         onChange={handleInputChange}
                         placeholder="email@example.com"
                         required
                     />
-                    {errors.email && <div className="error-message">{errors.email}</div>}
+                    {errors.email && <div className="text-red-500 text-sm mt-1 font-khula">{errors.email}</div>}
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="password" className="form-label">Password</label>
+                <div>
+                    <label htmlFor="password" className="block font-khula text-sm font-medium text-dark mb-1">Password</label>
                     <input
                         type="password"
                         id="password"
                         name="password"
-                        className={`form-input ${errors.password ? 'error' : ''}`}
+                        className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${
+                            errors.password ? 'border-red-500' : 'border-fill'
+                        }`}
                         value={formData.password}
                         onChange={handleInputChange}
                         placeholder="************"
                         required
                     />
-                    {errors.password && <div className="error-message">{errors.password}</div>}
+                    {errors.password && <div className="text-red-500 text-sm mt-1 font-khula">{errors.password}</div>}
                 </div>
 
-                <div className="form-group checkbox-group">
-                    <label className="checkbox-label">
+                <div>
+                    <label className="flex items-center font-khula text-sm text-dark">
                         <input
                             type="checkbox"
                             checked={isRobotChecked}
                             onChange={handleRobotCheck}
-                            className="checkbox-input"
+                            className="mr-2"
                         />
-                        <span className="checkmark">
-                            {isRobotChecked && '✓'}
-                        </span>
                         I'm not a robot
                     </label>
-                    {errors.robot && <div className="error-message">{errors.robot}</div>}
+                    {errors.robot && <div className="text-red-500 text-sm mt-1 font-khula">{errors.robot}</div>}
                 </div>
 
                 {errors.submit && (
-                    <div className="error-message submit-error">{errors.submit}</div>
+                    <div className="text-red-500 text-sm font-khula">{errors.submit}</div>
                 )}
 
                 <button
                     type="submit"
-                    className="btn btn-dark btn-full"
+                    className="w-full bg-dark text-white py-3 rounded font-inter font-medium hover:bg-darker transition-colors disabled:opacity-50"
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? 'SIGNING IN...' : "LET'S CODE"}

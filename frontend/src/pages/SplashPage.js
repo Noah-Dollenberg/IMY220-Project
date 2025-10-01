@@ -74,13 +74,12 @@ const SplashPage = () => {
   ];
 
   return (
-    <div className="splash-page">
+    <div className="min-h-screen bg-accent relative overflow-hidden">
       {backgroundIcons.map((icon) => (
         <div
           key={icon.id}
-          className="parallax-icon"
+          className="absolute pointer-events-none z-0"
           style={{
-            position: 'absolute',
             left: `${icon.x}%`,
             top: `${icon.y}%`,
             opacity: icon.opacity,
@@ -92,62 +91,53 @@ const SplashPage = () => {
               scale(${icon.scale})
               rotate(${icon.rotation}deg)
             `,
-            transition: 'transform 0.3s ease-out',
-            pointerEvents: 'none',
-            zIndex: 1
+            transition: 'transform 0.3s ease-out'
           }}
         >
-          <img
-            src="/assets/images/backgroundIcon.png"
-            style={{
-              width: '120px',
-              height: '120px',
-              filter: 'blur(1px)'
-            }}
-          />
+          <div className="w-32 h-32 text-6xl text-fill opacity-50 font-mono">&lt;/&gt;</div>
         </div>
       ))}
 
-      <main className="splash-main">
-        <div className="container">
-          <div className="splash-content">
-            <div className="brand-section">
-              <div className="logo">
-                <div className="logo-icon">[B]</div>
-                <h1 className="brand-name">BranchOut.</h1>
+      <main className="relative z-10 min-h-screen flex items-center">
+        <div className="max-w-7xl mx-auto px-6 w-full">
+          <div className="text-left">
+            <div className="mb-8">
+              <div className="flex items-center mb-4">
+                <div className="bg-highlight text-dark px-3 py-2 rounded font-inter font-bold text-2xl mr-3">[B]</div>
+                <h1 className="font-inter text-4xl font-bold text-dark">BranchOut.</h1>
               </div>
-              <p className="brand-tagline">Don't just commit.</p>
+              <p className="font-inter text-xl text-dark">Don't just commit.</p>
             </div>
-            <div className="hero-section">
-              <h2 className="hero-title">
+            <div className="max-w-2xl">
+              <h2 className="font-khula text-lg text-darker mb-8 leading-relaxed">
                 Collaborate with teammates, track your code history, and showcase your work all in one powerful, easy-to-use platform
               </h2>
-              <div className="cta-buttons">
+              <div className="flex gap-4 mb-4">
                 <button
-                  className="btn btn-primary btn-large"
+                  className="bg-dark text-white px-8 py-3 rounded font-inter font-medium hover:bg-darker transition-colors"
                   onClick={openLogin}
                 >
                   LOGIN
                 </button>
                 <button
-                  className="btn btn-secondary btn-large"
+                  className="bg-highlight text-dark px-8 py-3 rounded font-inter font-medium hover:bg-yellow-400 transition-colors"
                   onClick={openSignUp}
                 >
                   SIGN UP
                 </button>
               </div>
-              <p className="free-text">Do it! It's Free!!</p>
+              <p className="font-khula text-dark">Do it! It's Free!!</p>
             </div>
-            <footer className="splash-footer">
-              <p>&copy;BranchOut</p>
+            <footer className="absolute bottom-6 left-6">
+              <p className="font-khula text-darker text-sm">&copy;BranchOut</p>
             </footer>
           </div>
         </div>
       </main>
       {(showLogin || showSignUp) && (
-        <div className="modal-overlay" onClick={closeModals}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeModals}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={closeModals}>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative" onClick={(e) => e.stopPropagation()}>
+            <button className="absolute top-4 right-4 text-2xl text-darker hover:text-dark" onClick={closeModals}>
               &times;
             </button>
             {showLogin && <LoginForm />}
