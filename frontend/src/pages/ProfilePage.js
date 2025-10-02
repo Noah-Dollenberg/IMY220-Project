@@ -178,19 +178,22 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
             <main className="py-8">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-1 space-y-6 lg:min-w-80">
+                        <div className="lg:col-span-1 space-y-6 lg:min-w-96">
                             <div className="bg-white rounded p-6">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-20 h-20 bg-highlight rounded-full flex items-center justify-center flex-shrink-0">
+                                    <div className="w-20 h-20 bg-highlight rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                                         {profileUser?.profilePicture ? (
                                             <img 
                                                 src={profileUser.profilePicture} 
                                                 alt="Profile" 
-                                                className="w-20 h-20 rounded-full object-cover"
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'block';
+                                                }}
                                             />
-                                        ) : (
-                                            <span className="text-dark text-2xl">👤</span>
-                                        )}
+                                        ) : null}
+                                        <span className={`text-dark text-2xl ${profileUser?.profilePicture ? 'hidden' : ''}`}>👤</span>
                                     </div>
                                     <div className="flex-1">
                                         <h1 className="font-inter text-xl font-bold text-dark mb-2">{profileUser?.name || 'Unknown User'}</h1>
@@ -256,12 +259,19 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                             {friendRequests.length > 0 ? (
                                                 friendRequests.map(request => (
                                                     <div key={request._id} className="flex items-center gap-3 p-3 bg-accent rounded border border-fill">
-                                                        <div className="w-10 h-10 bg-highlight rounded-full flex items-center justify-center flex-shrink-0">
+                                                        <div className="w-10 h-10 bg-highlight rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                                                             {request.requesterInfo?.profilePicture ? (
-                                                                <img src={request.requesterInfo.profilePicture} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
-                                                            ) : (
-                                                                <span className="text-dark">👤</span>
-                                                            )}
+                                                                <img 
+                                                                    src={request.requesterInfo.profilePicture} 
+                                                                    alt="Profile" 
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => {
+                                                                        e.target.style.display = 'none';
+                                                                        e.target.nextSibling.style.display = 'block';
+                                                                    }}
+                                                                />
+                                                            ) : null}
+                                                            <span className={`text-dark ${request.requesterInfo?.profilePicture ? 'hidden' : ''}`}>👤</span>
                                                         </div>
                                                         <div className="flex-1">
                                                             <div className="font-inter font-medium text-dark text-sm">
@@ -306,10 +316,10 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                         </div>
                                                         <div className="flex-1">
                                                             <div className="font-inter font-medium text-dark text-sm">
-                                                                {invitation.projectInfo?.name || 'Unknown Project'}
+                                                                {invitation.project?.name || invitation.projectInfo?.name || 'Unknown Project'}
                                                             </div>
                                                             <div className="font-khula text-xs text-darker">
-                                                                Invited by {invitation.inviterInfo?.name || 'Unknown'}
+                                                                Invited by {invitation.inviter?.name || invitation.inviterInfo?.name || 'Unknown'}
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-2">
@@ -344,12 +354,19 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                     {friends.length > 0 ? (
                                         friends.map(friend => (
                                             <div key={friend._id} className="flex items-center gap-3 p-3 hover:bg-accent rounded border border-transparent hover:border-fill transition-all">
-                                                <div className="w-10 h-10 bg-highlight rounded-full flex items-center justify-center flex-shrink-0">
+                                                <div className="w-10 h-10 bg-highlight rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                                                     {friend.profilePicture ? (
-                                                        <img src={friend.profilePicture} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
-                                                    ) : (
-                                                        <span className="text-dark">👤</span>
-                                                    )}
+                                                        <img 
+                                                            src={friend.profilePicture} 
+                                                            alt="Profile" 
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                e.target.style.display = 'none';
+                                                                e.target.nextSibling.style.display = 'block';
+                                                            }}
+                                                        />
+                                                    ) : null}
+                                                    <span className={`text-dark ${friend.profilePicture ? 'hidden' : ''}`}>👤</span>
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="font-inter font-medium text-dark text-sm">{friend.name}</div>

@@ -471,8 +471,21 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                         <div className="p-6 border-b border-fill">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-16 h-16 bg-highlight rounded-full flex items-center justify-center text-dark font-inter font-bold text-xl">
-                                        {project.ownerInfo?.name?.charAt(0) || 'U'}
+                                    <div className="w-16 h-16 bg-highlight rounded-full flex items-center justify-center text-dark font-inter font-bold text-xl overflow-hidden">
+                                        {project.ownerInfo?.profilePicture ? (
+                                            <img 
+                                                src={project.ownerInfo.profilePicture} 
+                                                alt="Owner" 
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'block';
+                                                }}
+                                            />
+                                        ) : null}
+                                        <span className={`${project.ownerInfo?.profilePicture ? 'hidden' : ''}`}>
+                                            {project.ownerInfo?.name?.charAt(0) || 'U'}
+                                        </span>
                                     </div>
                                     <div>
                                         <h1 className="font-inter text-2xl font-bold text-dark mb-1">{project.name}</h1>

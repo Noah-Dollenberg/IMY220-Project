@@ -6,8 +6,7 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
     const [formData, setFormData] = useState({
         name: project.name || '',
         description: project.description || '',
-        version: project.version || '',
-        image: project.image || null
+        version: project.version || ''
     });
     const [loading, setLoading] = useState(false);
 
@@ -26,19 +25,7 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
         }));
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setFormData(prev => ({
-                    ...prev,
-                    image: e.target.result
-                }));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+
 
     const handleUpdateProject = async (e) => {
         e.preventDefault();
@@ -111,10 +98,10 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                 </div>
 
                 <div className="space-y-6">
-                    {/* Project Details (Owner Only) */}
+                    {/* Project Details */}
                     {isOwner && (
                         <div className="bg-accent rounded-lg p-4">
-                            <h3 className="font-inter text-lg font-bold text-dark mb-4">Project Details (Owner Only)</h3>
+                            <h3 className="font-inter text-lg font-bold text-dark mb-4">Project Details</h3>
                             <form onSubmit={handleUpdateProject} className="space-y-4">
                                 <div>
                                     <label className="block font-khula font-medium text-dark mb-2">Project Name</label>
@@ -149,30 +136,15 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                                         required
                                     />
                                 </div>
-                                <div>
-                                    <label className="block font-khula font-medium text-dark mb-2">Profile Picture</label>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                        className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-4 py-2 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 disabled:opacity-50"
-                                >
-                                    {loading ? 'Updating...' : 'Update Project'}
-                                </button>
+
                             </form>
                         </div>
                     )}
 
-                    {/* Members Management (Owner Only) */}
+                    {/* Members Management */}
                     {isOwner && (
                         <div className="bg-accent rounded-lg p-4">
-                            <h3 className="font-inter text-lg font-bold text-dark mb-4">Members (Owner Only)</h3>
+                            <h3 className="font-inter text-lg font-bold text-dark mb-4">Members</h3>
                             <div className="space-y-2">
                                 {project.memberInfo?.map(member => (
                                     <div key={member._id} className="flex items-center justify-between p-2 bg-white rounded">
@@ -196,6 +168,19 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                                     </div>
                                 ))}
                             </div>
+                        </div>
+                    )}
+
+                    {/* Update Project Button */}
+                    {isOwner && (
+                        <div className="flex justify-end">
+                            <button
+                                onClick={handleUpdateProject}
+                                disabled={loading}
+                                className="px-4 py-2 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 disabled:opacity-50"
+                            >
+                                {loading ? 'Updating...' : 'Update Project'}
+                            </button>
                         </div>
                     )}
 

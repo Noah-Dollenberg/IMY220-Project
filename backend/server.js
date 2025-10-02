@@ -1737,7 +1737,6 @@ app.delete('/api/projects/:id/files', checkUser, async (req, res) => {
                 $pull: { 
                     files: { 
                         $or: [
-                            { $in: files },
                             { filename: { $in: files } },
                             { originalName: { $in: files } }
                         ]

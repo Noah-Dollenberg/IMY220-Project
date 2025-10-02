@@ -8,6 +8,7 @@ const InviteFriendsModal = ({ projectId, onClose, onInviteSent }) => {
     const [filteredFriends, setFilteredFriends] = useState([]);
     const [loading, setLoading] = useState(true);
     const [inviting, setInviting] = useState(new Set());
+    const [invitedUsers, setInvitedUsers] = useState(new Set());
 
     useEffect(() => {
         fetchFriends();
@@ -41,6 +42,7 @@ const InviteFriendsModal = ({ projectId, onClose, onInviteSent }) => {
         setInviting(prev => new Set(prev).add(friendId));
         try {
             await projectsAPI.sendInvitation(projectId, friendId);
+            setInvitedUsers(prev => new Set(prev).add(friendId));
             if (onInviteSent) onInviteSent();
             alert('Invitation sent successfully!');
         } catch (error) {
@@ -84,23 +86,36 @@ const InviteFriendsModal = ({ projectId, onClose, onInviteSent }) => {
                         ) : (
                             filteredFriends.map(friend => (
                                 <div key={friend._id} className="flex items-center gap-3 p-3 bg-accent rounded-lg">
-                                    <div className="w-10 h-10 bg-highlight rounded-full flex items-center justify-center text-dark font-inter font-semibold flex-shrink-0">
+                                    <div className="w-10 h-10 bg-highlight rounded-full flex items-center justify-center text-dark font-inter font-semibold flex-shrink-0 overflow-hidden">
                                         {friend.profilePicture ? (
-                                            <img src={friend.profilePicture} alt="Profile" className="w-full h-full rounded-full object-cover" />
-                                        ) : (
-                                            friend.name?.charAt(0) || '👤'
-                                        )}
+                                            <img 
+                                                src={friend.profilePicture} 
+                                                alt="Profile" 
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'block';
+                                                }}
+                                            />
+                                        ) : null}
+                                        <span className={`${friend.profilePicture ? 'hidden' : ''}`}>
+                                            {friend.name?.charAt(0) || '👤'}
+                                        </span>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="font-khula font-medium text-dark">{friend.name}</div>
                                         <div className="font-khula text-sm text-darker truncate">{friend.email}</div>
                                     </div>
                                     <button
-                                        className="px-3 py-1 bg-highlight text-dark rounded font-khula hover:bg-yellow-400 transition-colors disabled:opacity-50 text-sm"
-                                        onClick={() => handleInvite(friend._id)}
-                                        disabled={inviting.has(friend._id)}
+                                        className={`px-3 py-1 rounded font-khula text-sm transition-colors ${
+                                            invitedUsers.has(friend._id) 
+                                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                                : 'bg-highlight text-dark hover:bg-yellow-400'
+                                        }`}
+                                        onClick={() => !invitedUsers.has(friend._id) && handleInvite(friend._id)}
+                                        disabled={inviting.has(friend._id) || invitedUsers.has(friend._id)}
                                     >
-                                        {inviting.has(friend._id) ? 'Inviting...' : 'Invite'}
+                                        {inviting.has(friend._id) ? 'Inviting...' : invitedUsers.has(friend._id) ? 'Invited' : 'Invite'}
                                     </button>
                                 </div>
                             ))
@@ -108,11 +123,7 @@ const InviteFriendsModal = ({ projectId, onClose, onInviteSent }) => {
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-fill">
-                    <button className="w-full px-4 py-2 bg-gray-200 text-dark rounded font-khula hover:bg-gray-300 transition-colors" onClick={onClose}>
-                        Close
-                    </button>
-                </div>
+
             </div>
         </div>
     );

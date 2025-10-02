@@ -11,10 +11,12 @@ const SearchPage = ({ currentUser, onLogout }) => {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [friendsList, setFriendsList] = useState([]);
+    const [sentRequests, setSentRequests] = useState([]);
 
     useEffect(() => {
         loadAllUsers();
         loadFriends();
+        loadSentRequests();
     }, []);
 
     const loadAllUsers = async () => {
@@ -39,8 +41,21 @@ const SearchPage = ({ currentUser, onLogout }) => {
         }
     };
 
+    const loadSentRequests = async () => {
+        try {
+            const response = await friendsAPI.getSentRequests();
+            setSentRequests(response.requests || []);
+        } catch (error) {
+            console.error('Load sent requests error:', error);
+        }
+    };
+
     const isFriend = (userId) => {
         return friendsList.some(friend => friend._id === userId);
+    };
+
+    const hasRequestSent = (userId) => {
+        return sentRequests.some(request => request.recipient === userId);
     };
 
     const handleInputChange = (e) => {
@@ -61,6 +76,7 @@ const SearchPage = ({ currentUser, onLogout }) => {
     const sendFriendRequest = async (userId) => {
         try {
             await friendsAPI.sendRequest(userId);
+            setSentRequests(prev => [...prev, { recipient: userId }]);
             alert('Friend request sent!');
         } catch (error) {
             alert('Failed to send friend request: ' + error.message);
@@ -97,12 +113,19 @@ const SearchPage = ({ currentUser, onLogout }) => {
                                     {filteredUsers.map(user => (
                                         <div key={user._id} className="bg-accent border border-fill rounded-lg p-4">
                                             <div className="flex items-center gap-4 mb-4">
-                                                <div className="w-12 h-12 bg-highlight rounded-full flex items-center justify-center flex-shrink-0">
+                                                <div className="w-12 h-12 bg-highlight rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                                                     {user.profilePicture ? (
-                                                        <img src={user.profilePicture} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
-                                                    ) : (
-                                                        <span className="text-dark text-lg">👤</span>
-                                                    )}
+                                                        <img 
+                                                            src={user.profilePicture} 
+                                                            alt="Profile" 
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                e.target.style.display = 'none';
+                                                                e.target.nextSibling.style.display = 'block';
+                                                            }}
+                                                        />
+                                                    ) : null}
+                                                    <span className={`text-dark text-lg ${user.profilePicture ? 'hidden' : ''}`}>👤</span>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="font-inter font-semibold text-dark truncate">{user.name}</h3>
@@ -119,10 +142,15 @@ const SearchPage = ({ currentUser, onLogout }) => {
                                                 </button>
                                                 {user._id !== currentUser._id && !isFriend(user._id) && (
                                                     <button 
-                                                        className="flex-1 bg-fill text-dark px-3 py-2 rounded font-khula text-sm hover:bg-accent transition-colors"
-                                                        onClick={() => sendFriendRequest(user._id)}
+                                                        className={`flex-1 px-3 py-2 rounded font-khula text-sm transition-colors ${
+                                                            hasRequestSent(user._id) 
+                                                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                                                : 'bg-fill text-dark hover:bg-accent'
+                                                        }`}
+                                                        onClick={() => !hasRequestSent(user._id) && sendFriendRequest(user._id)}
+                                                        disabled={hasRequestSent(user._id)}
                                                     >
-                                                        Add Friend
+                                                        {hasRequestSent(user._id) ? 'Request Sent' : 'Add Friend'}
                                                     </button>
                                                 )}
                                             </div>

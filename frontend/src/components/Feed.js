@@ -27,7 +27,18 @@ const Feed = ({ feedType = 'local' }) => {
                 activityAPI.getFeed(feedType)
             ]);
 
-            setProjects(projectsResponse.projects || []);
+            let filteredProjects = projectsResponse.projects || [];
+            
+            if (feedType === 'local') {
+                const currentUser = JSON.parse(localStorage.getItem('userData'));
+                // Filter to show only user's own projects and friends' projects
+                filteredProjects = filteredProjects.filter(project => 
+                    project.owner === currentUser._id || 
+                    project.members?.includes(currentUser._id)
+                );
+            }
+
+            setProjects(filteredProjects);
             setActivities(activitiesResponse.activities || []);
         } catch (err) {
             setError(err.message);

@@ -12,8 +12,7 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
         description: '',
         language: 'JavaScript',
         version: '1.0.0',
-        isPublic: true,
-        profilePicture: null
+        isPublic: true
     });
 
     const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -23,8 +22,7 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
     const [createdProjectId, setCreatedProjectId] = useState(null);
     const [friends, setFriends] = useState([]);
     const [selectedFriends, setSelectedFriends] = useState([]);
-    const [previewImage, setPreviewImage] = useState(null);
-    const [imageDragActive, setImageDragActive] = useState(false);
+
 
     useEffect(() => {
         const fetchFriends = async () => {
@@ -121,87 +119,7 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
         setUploadedFiles(prev => [...prev, ...fileArray]);
     };
 
-    const handleImageUpload = (file) => {
-        if (file && file.type.startsWith('image/')) {
-            if (file.size > 10 * 1024 * 1024) {
-                alert('Image must be smaller than 10MB');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    const maxSize = 150;
-                    let { width, height } = img;
-                    
-                    if (width > height) {
-                        if (width > maxSize) {
-                            height = (height * maxSize) / width;
-                            width = maxSize;
-                        }
-                    } else {
-                        if (height > maxSize) {
-                            width = (width * maxSize) / height;
-                            height = maxSize;
-                        }
-                    }
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 1);
-                    setPreviewImage(compressedDataUrl);
-                    setFormData(prev => ({
-                        ...prev,
-                        profilePicture: compressedDataUrl
-                    }));
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
-    const handleImageFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            handleImageUpload(file);
-        }
-    };
-
-    const handleImageDrag = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === 'dragenter' || e.type === 'dragover') {
-            setImageDragActive(true);
-        } else if (e.type === 'dragleave') {
-            setImageDragActive(false);
-        }
-    };
-
-    const handleImageDrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setImageDragActive(false);
-
-        const file = e.dataTransfer.files[0];
-        if (file) {
-            handleImageUpload(file);
-        }
-    };
-
-    const removeImage = () => {
-        setPreviewImage(null);
-        setFormData(prev => ({
-            ...prev,
-            profilePicture: null
-        }));
-    };
 
     const toggleFriendSelection = (friendId) => {
         setSelectedFriends(prev => 
@@ -237,7 +155,7 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                 language: formData.language,
                 version: formData.version,
                 isPublic: formData.isPublic,
-                image: formData.profilePicture,
+
                 files: []
             };
 
@@ -285,58 +203,7 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-8">
-                            <div>
-                                <h3 className="font-inter text-lg font-semibold text-dark mb-4">Project Profile Picture</h3>
-                                <div className="flex flex-col items-center space-y-4">
-                                    <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                                        {previewImage ? (
-                                            <img src={previewImage} alt="Project Preview" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full bg-highlight flex items-center justify-center text-dark text-2xl font-bold">
-                                                <span>
-                                                    {formData.name?.charAt(0) || 'P'}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
 
-                                    <div
-                                        className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
-                                            imageDragActive ? 'border-highlight bg-yellow-50' : 'border-fill'
-                                        }`}
-                                        onDragEnter={handleImageDrag}
-                                        onDragLeave={handleImageDrag}
-                                        onDragOver={handleImageDrag}
-                                        onDrop={handleImageDrop}
-                                    >
-                                        <div className="space-y-2">
-                                            <div className="text-2xl">📷</div>
-                                            <p className="font-khula text-sm text-darker">Drag & drop an image here</p>
-                                            <p className="font-khula text-sm text-darker">or</p>
-                                            <input
-                                                type="file"
-                                                id="project-picture-input"
-                                                accept="image/*"
-                                                onChange={handleImageFileChange}
-                                                className="hidden"
-                                            />
-                                            <label htmlFor="project-picture-input" className="inline-block px-4 py-2 bg-fill text-dark rounded font-khula hover:bg-accent cursor-pointer">
-                                                Choose Image
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    {previewImage && (
-                                        <button
-                                            type="button"
-                                            className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm font-khula hover:bg-red-200"
-                                            onClick={removeImage}
-                                        >
-                                            Remove Image
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
 
                             <div>
                                 <h3 className="font-inter text-lg font-semibold text-dark mb-4">Project Files</h3>
