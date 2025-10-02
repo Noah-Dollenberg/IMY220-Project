@@ -26,11 +26,12 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, '../uploads');
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
+        const projectId = req.params.id;
+        const projectPath = path.join(__dirname, '../uploads', projectId);
+        if (!fs.existsSync(projectPath)) {
+            fs.mkdirSync(projectPath, { recursive: true });
         }
-        cb(null, uploadPath);
+        cb(null, projectPath);
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -486,6 +487,12 @@ app.post('/api/projects', checkUser, async (req, res) => {
         };
 
         const result = await db.collection('projects').insertOne(newProject);
+
+        // Create project folder
+        const projectPath = path.join(__dirname, '../uploads', result.insertedId.toString());
+        if (!fs.existsSync(projectPath)) {
+            fs.mkdirSync(projectPath, { recursive: true });
+        }
 
         // Add project to user's projects array
         await db.collection('users').updateOne(
@@ -1717,7 +1724,7 @@ app.delete('/api/projects/:id/files', checkUser, async (req, res) => {
         // Remove files from disk
         filesToRemove.forEach(file => {
             if (typeof file === 'object' && file.filename) {
-                const filePath = path.join(__dirname, '../uploads', file.filename);
+                const filePath = path.join(__dirname, '../uploads', id, file.filename);
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                 }
@@ -1787,17 +1794,10 @@ app.delete('/api/projects/:id', checkUser, async (req, res) => {
             });
         }
 
-        // Delete all project files from filesystem
-        if (project.files && project.files.length > 0) {
-            project.files.forEach(file => {
-                const filename = typeof file === 'string' ? file : file.filename;
-                if (filename) {
-                    const filePath = path.join(__dirname, '../uploads', filename);
-                    if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath);
-                    }
-                }
-            });
+        // Delete entire project folder
+        const projectPath = path.join(__dirname, '../uploads', id);
+        if (fs.existsSync(projectPath)) {
+            fs.rmSync(projectPath, { recursive: true, force: true });
         }
 
         // Remove project from all users' projects arrays
@@ -1936,7 +1936,7 @@ app.get('/api/projects/:id/files/:filename', checkUser, async (req, res) => {
             });
         }
 
-        const filePath = path.join(__dirname, '../uploads', filename);
+        const filePath = path.join(__dirname, '../uploads', id, filename);
         if (!fs.existsSync(filePath)) {
             return res.status(404).json({
                 success: false,
