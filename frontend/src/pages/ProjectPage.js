@@ -23,6 +23,8 @@ const ProjectPage = ({ currentUser, onLogout }) => {
     const [showInviteFriends, setShowInviteFriends] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [dragOver, setDragOver] = useState(false);
 
     useEffect(() => {
         fetchProject();
@@ -216,61 +218,69 @@ const ProjectPage = ({ currentUser, onLogout }) => {
 
             <div className="bg-accent rounded-lg p-6">
                 <h3 className="font-inter text-lg font-bold text-dark mb-4">Actions</h3>
-                <div className="space-y-4">
-                    {canCheckout && (
-                        <button
-                            className="px-6 py-3 bg-green-500 text-white rounded font-khula hover:bg-green-600 transition-colors disabled:opacity-50"
-                            onClick={handleCheckout}
-                            disabled={checkingOut}
-                        >
-                            {checkingOut ? 'Checking Out...' : 'Check Out Project'}
-                        </button>
-                    )}
+                <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-4">
+                        {canCheckout && (
+                            <button
+                                className="px-6 py-3 bg-green-500 text-white rounded font-khula hover:bg-green-600 transition-colors disabled:opacity-50"
+                                onClick={handleCheckout}
+                                disabled={checkingOut}
+                            >
+                                {checkingOut ? 'Checking Out...' : 'Check Out Project'}
+                            </button>
+                        )}
 
-                    {canCheckin && (
-                        <div className="bg-white rounded-lg p-4 border border-fill">
-                            <h4 className="font-inter text-base font-bold text-dark mb-4">Check In Project</h4>
-                            <form onSubmit={handleCheckin} className="space-y-4">
-                                <div>
-                                    <label className="block font-khula font-medium text-dark mb-2">Check-in Message</label>
-                                    <textarea
-                                        value={checkinData.message}
-                                        onChange={(e) => setCheckinData(prev => ({
-                                            ...prev,
-                                            message: e.target.value
-                                        }))}
-                                        placeholder="Describe your changes..."
-                                        rows="3"
-                                        className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block font-khula font-medium text-dark mb-2">Version</label>
-                                    <input
-                                        type="text"
-                                        value={checkinData.version}
-                                        onChange={(e) => setCheckinData(prev => ({
-                                            ...prev,
-                                            version: e.target.value
-                                        }))}
-                                        placeholder="1.0.1"
-                                        className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
-                                        required
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="px-6 py-3 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 transition-colors disabled:opacity-50"
-                                    disabled={checkingIn}
-                                >
-                                    {checkingIn ? 'Checking In...' : 'Check In Project'}
-                                </button>
-                            </form>
-                        </div>
-                    )}
+                        {canCheckin && (
+                            <div className="bg-white rounded-lg p-4 border border-fill">
+                                <h4 className="font-inter text-base font-bold text-dark mb-4">Check In Project</h4>
+                                <form onSubmit={handleCheckin} className="space-y-4">
+                                    <div>
+                                        <label className="block font-khula font-medium text-dark mb-2">Check-in Message</label>
+                                        <textarea
+                                            value={checkinData.message}
+                                            onChange={(e) => setCheckinData(prev => ({
+                                                ...prev,
+                                                message: e.target.value
+                                            }))}
+                                            placeholder="Describe your changes..."
+                                            rows="3"
+                                            className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block font-khula font-medium text-dark mb-2">Version</label>
+                                        <input
+                                            type="text"
+                                            value={checkinData.version}
+                                            onChange={(e) => setCheckinData(prev => ({
+                                                ...prev,
+                                                version: e.target.value
+                                            }))}
+                                            placeholder="1.0.1"
+                                            className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
+                                            required
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className="px-6 py-3 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 transition-colors disabled:opacity-50"
+                                        disabled={checkingIn}
+                                    >
+                                        {checkingIn ? 'Checking In...' : 'Check In Project'}
+                                    </button>
+                                </form>
+                            </div>
+                        )}
 
-                    {isProjectOwner && (
+                        {!isProjectMember && (
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <p className="font-khula text-yellow-800">You are not a member of this project</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {isProjectOwner && project?.status === 'checked-in' && (
                         <button
                             className="px-6 py-3 bg-red-500 text-white rounded font-khula hover:bg-red-600 transition-colors disabled:opacity-50"
                             onClick={handleDeleteProject}
@@ -279,37 +289,152 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                             {deleting ? 'Deleting...' : 'Delete Project'}
                         </button>
                     )}
-
-                    {!isProjectMember && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <p className="font-khula text-yellow-800">You are not a member of this project</p>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
     );
 
+    const handleFileUpload = async (files) => {
+        if (!files || files.length === 0) return;
+        
+        setUploading(true);
+        try {
+            await projectsAPI.uploadFiles(projectId, Array.from(files));
+            await fetchProject();
+        } catch (err) {
+            alert('Failed to upload files: ' + err.message);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleFileInputChange = (e) => {
+        handleFileUpload(e.target.files);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setDragOver(false);
+        handleFileUpload(e.dataTransfer.files);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setDragOver(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setDragOver(false);
+    };
+
+    const handleDownloadFile = (file) => {
+        try {
+            projectsAPI.downloadFile(projectId, file.filename);
+        } catch (err) {
+            alert('Failed to download file: ' + err.message);
+        }
+    };
+
+    const handleRemoveFile = async (file) => {
+        if (!window.confirm(`Are you sure you want to remove ${file.originalName}?`)) {
+            return;
+        }
+        
+        try {
+            await projectsAPI.removeFiles(projectId, [file.filename]);
+            await fetchProject();
+        } catch (err) {
+            alert('Failed to remove file: ' + err.message);
+        }
+    };
+
+    const canModifyFiles = isProjectMember && 
+        project?.status === 'checked-out' && 
+        project?.checkedOutBy?.toString() === currentUser?._id;
+
     const filesContent = (
         <div>
-            <div className="mb-6">
+            <div className="mb-6 flex justify-between items-center">
                 <h3 className="font-inter text-lg font-bold text-dark">Project Files ({project.files?.length || 0})</h3>
+                {canModifyFiles && (
+                    <div className="flex gap-2">
+                        <input
+                            type="file"
+                            multiple
+                            onChange={handleFileInputChange}
+                            className="hidden"
+                            id="file-input"
+                        />
+                        <label
+                            htmlFor="file-input"
+                            className="px-4 py-2 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 transition-colors cursor-pointer"
+                        >
+                            Add Files
+                        </label>
+                    </div>
+                )}
             </div>
+            
+            {canModifyFiles && (
+                <div
+                    className={`mb-6 border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                        dragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50'
+                    }`}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                >
+                    <div className="text-4xl mb-4">📁</div>
+                    <p className="font-khula text-darker mb-2">
+                        {uploading ? 'Uploading files...' : 'Drag and drop files here or click "Add Files" above'}
+                    </p>
+                    <p className="font-khula text-sm text-gray-500">Maximum file size: 10MB</p>
+                </div>
+            )}
+            
             <div className="space-y-3">
                 {project.files?.length > 0 ? (
-                    project.files.map((fileName, index) => (
-                        <div key={index} className="flex items-center gap-3 p-4 bg-accent rounded-lg">
-                            <div className="text-2xl">📄</div>
-                            <div className="flex-1">
-                                <div className="font-khula font-medium text-dark">{fileName}</div>
-                                <div className="font-khula text-sm text-darker">File</div>
+                    project.files.map((file, index) => {
+                        const fileName = file.originalName || file;
+                        const fileSize = file.size ? `${(file.size / 1024).toFixed(1)} KB` : '';
+                        const uploadDate = file.uploadedAt ? new Date(file.uploadedAt).toLocaleDateString() : '';
+                        
+                        return (
+                            <div key={index} className="flex items-center gap-3 p-4 bg-accent rounded-lg">
+                                <div className="text-2xl">📄</div>
+                                <div className="flex-1">
+                                    <div className="font-khula font-medium text-dark">{fileName}</div>
+                                    <div className="font-khula text-sm text-darker">
+                                        {fileSize && `${fileSize} • `}
+                                        {uploadDate && `Uploaded ${uploadDate}`}
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handleDownloadFile(file)}
+                                        className="px-3 py-1 bg-green-500 text-white rounded text-sm font-khula hover:bg-green-600 transition-colors"
+                                    >
+                                        Download
+                                    </button>
+                                    {canModifyFiles && (
+                                        <button
+                                            onClick={() => handleRemoveFile(file)}
+                                            className="px-3 py-1 bg-red-500 text-white rounded text-sm font-khula hover:bg-red-600 transition-colors"
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 ) : (
                     <div className="text-center py-12 bg-accent rounded-lg">
                         <div className="text-4xl mb-4">📁</div>
-                        <p className="font-khula text-darker">No files in this project yet</p>
+                        <p className="font-khula text-darker">
+                            {canModifyFiles ? 'No files in this project yet. Upload some files to get started!' : 'No files in this project yet'}
+                        </p>
                     </div>
                 )}
             </div>

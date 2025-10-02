@@ -1,6 +1,8 @@
 // NJ (Noah) Dollenberg u24596142 41
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const { MongoClient, ObjectId } = require('mongodb');
 
 const app = express();
@@ -20,6 +22,29 @@ MongoClient.connect(MONGODB_URI)
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = path.join(__dirname, '../uploads');
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use(express.static(path.join(__dirname, '../frontend/public'), {
     setHeaders: (res, path) => {
@@ -407,7 +432,7 @@ app.get('/api/projects', checkUser, async (req, res) => {
 
 app.post('/api/projects', checkUser, async (req, res) => {
     try {
-        const { name, description, language, version, isPublic, files } = req.body;
+        const { name, description, language, version, isPublic, files, image } = req.body;
 
         if (!name || !description) {
             return res.status(400).json({
@@ -426,7 +451,7 @@ app.post('/api/projects', checkUser, async (req, res) => {
             type: 'web-application',
             version: version || '1.0.0',
             isPublic: isPublic !== false,
-            image: null,
+            image: image || null,
             status: 'checked-in',
             checkedOutBy: null,
             files: files || [],
@@ -1299,26 +1324,44 @@ app.get('/api/projects/invitations', checkUser, async (req, res) => {
         
         const invitationsWithDetails = await Promise.all(
             receivedInvitations.map(async (invitation) => {
-                const project = await db.collection('projects').findOne({ _id: invitation.projectId });
-                const inviter = await db.collection('users').findOne({ _id: invitation.invitedBy });
-                
-                return {
-                    ...invitation,
-                    projectInfo: project ? {
-                        name: project.name,
-                        description: project.description
-                    } : null,
-                    inviterInfo: inviter ? {
-                        name: inviter.name,
-                        email: inviter.email
-                    } : null
-                };
+                try {
+                    // Validate ObjectIds before querying
+                    if (!ObjectId.isValid(invitation.projectId) || !ObjectId.isValid(invitation.invitedBy)) {
+                        return {
+                            ...invitation,
+                            projectInfo: null,
+                            inviterInfo: null
+                        };
+                    }
+                    
+                    const project = await db.collection('projects').findOne({ _id: invitation.projectId });
+                    const inviter = await db.collection('users').findOne({ _id: invitation.invitedBy });
+                    
+                    return {
+                        ...invitation,
+                        projectInfo: project ? {
+                            name: project.name,
+                            description: project.description
+                        } : null,
+                        inviterInfo: inviter ? {
+                            name: inviter.name,
+                            email: inviter.email
+                        } : null
+                    };
+                } catch (err) {
+                    console.error('Error processing invitation:', err);
+                    return {
+                        ...invitation,
+                        projectInfo: null,
+                        inviterInfo: null
+                    };
+                }
             })
         );
 
         res.json({
             success: true,
-            invitations: invitationsWithDetails
+            invitations: invitationsWithDetails.filter(inv => inv.projectInfo && inv.inviterInfo)
         });
     } catch (error) {
         console.error('Get project invitations error:', error);
@@ -1631,17 +1674,47 @@ app.delete('/api/projects/:id/files', checkUser, async (req, res) => {
             });
         }
 
-        if (project.status !== 'checked-out' || project.checkedOutBy.toString() !== req.user._id.toString()) {
+        // Allow file operations during creation or when checked out
+        const isJustCreated = new Date() - new Date(project.createdAt) < 60000; // 1 minute after creation
+        const isCheckedOutByUser = project.status === 'checked-out' && project.checkedOutBy.toString() === req.user._id.toString();
+        
+        if (!isJustCreated && !isCheckedOutByUser) {
             return res.status(400).json({
                 success: false,
                 message: 'Project must be checked out by you to remove files'
             });
         }
 
+        // Get file info before removing
+        const filesToRemove = project.files.filter(file => {
+            if (typeof file === 'string') {
+                return files.includes(file);
+            }
+            return files.includes(file.filename) || files.includes(file.originalName);
+        });
+
+        // Remove files from disk
+        filesToRemove.forEach(file => {
+            if (typeof file === 'object' && file.filename) {
+                const filePath = path.join(__dirname, '../uploads', file.filename);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            }
+        });
+
         await db.collection('projects').updateOne(
             { _id: new ObjectId(id) },
             { 
-                $pullAll: { files: files },
+                $pull: { 
+                    files: { 
+                        $or: [
+                            { $in: files },
+                            { filename: { $in: files } },
+                            { originalName: { $in: files } }
+                        ]
+                    }
+                },
                 $set: { updatedAt: new Date() }
             }
         );
@@ -1714,6 +1787,137 @@ app.delete('/api/projects/:id', checkUser, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error deleting project'
+        });
+    }
+});
+
+// Upload files to project
+app.post('/api/projects/:id/upload', checkUser, upload.array('files'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID format'
+            });
+        }
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No files uploaded'
+            });
+        }
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(id) });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found'
+            });
+        }
+
+        if (!project.members.some(member => member.toString() === req.user._id.toString())) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not a member of this project'
+            });
+        }
+
+        // Allow uploads during creation (when project is just created) or when checked out
+        const isJustCreated = new Date() - new Date(project.createdAt) < 60000; // 1 minute after creation
+        const isCheckedOutByUser = project.status === 'checked-out' && project.checkedOutBy.toString() === req.user._id.toString();
+        
+        if (!isJustCreated && !isCheckedOutByUser) {
+            return res.status(400).json({
+                success: false,
+                message: 'Project must be checked out by you to upload files'
+            });
+        }
+
+        const fileData = req.files.map(file => ({
+            originalName: file.originalname,
+            filename: file.filename,
+            size: file.size,
+            mimetype: file.mimetype,
+            uploadedBy: req.user._id,
+            uploadedAt: new Date()
+        }));
+
+        await db.collection('projects').updateOne(
+            { _id: new ObjectId(id) },
+            { 
+                $push: { files: { $each: fileData } },
+                $set: { updatedAt: new Date() }
+            }
+        );
+
+        res.json({
+            success: true,
+            message: 'Files uploaded successfully',
+            files: fileData
+        });
+    } catch (error) {
+        console.error('Upload files error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error uploading files'
+        });
+    }
+});
+
+// Download file from project
+app.get('/api/projects/:id/files/:filename', checkUser, async (req, res) => {
+    try {
+        const { id, filename } = req.params;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID format'
+            });
+        }
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(id) });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found'
+            });
+        }
+
+        if (!project.isPublic && !project.members.some(member => member.toString() === req.user._id.toString())) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to access this project'
+            });
+        }
+
+        const file = project.files?.find(f => f.filename === filename);
+        if (!file) {
+            return res.status(404).json({
+                success: false,
+                message: 'File not found'
+            });
+        }
+
+        const filePath = path.join(__dirname, '../uploads', filename);
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({
+                success: false,
+                message: 'File not found on disk'
+            });
+        }
+
+        res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
+        res.setHeader('Content-Type', file.mimetype);
+        res.sendFile(filePath);
+    } catch (error) {
+        console.error('Download file error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error downloading file'
         });
     }
 });

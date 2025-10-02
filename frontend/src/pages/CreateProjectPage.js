@@ -232,17 +232,23 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
 
         try {
             const projectData = {
-                ...formData,
-                files: uploadedFiles.map(file => ({
-                    name: file.name,
-                    size: file.size,
-                    type: file.type
-                })),
-                invitedFriends: selectedFriends
+                name: formData.name,
+                description: formData.description,
+                language: formData.language,
+                version: formData.version,
+                isPublic: formData.isPublic,
+                image: formData.profilePicture,
+                files: []
             };
 
             const response = await projectsAPI.create(projectData);
             setCreatedProjectId(response.projectId);
+            
+            // Upload files if any
+            if (uploadedFiles.length > 0) {
+                const fileObjects = uploadedFiles.map(f => f.file);
+                await projectsAPI.uploadFiles(response.projectId, fileObjects);
+            }
             
             // Send invitations to selected friends
             if (selectedFriends.length > 0) {
@@ -502,36 +508,39 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                                 {friends.length > 0 ? (
                                     <div className="border border-fill rounded">
                                         <div className={`space-y-2 p-4 ${friends.length > 3 ? 'max-h-48 overflow-y-auto' : ''}`}>
-                                            {friends.map((friend) => (
-                                                <div key={friend.id} className="flex items-center justify-between p-3 bg-accent rounded border border-fill">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                                                            {friend.profilePicture ? (
-                                                                <img src={friend.profilePicture} alt={friend.name} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="w-full h-full bg-highlight flex items-center justify-center text-dark text-sm font-bold">
-                                                                    {friend.name?.charAt(0) || 'U'}
-                                                                </div>
-                                                            )}
+                                            {friends.map((friend) => {
+                                                const friendId = friend._id || friend.id;
+                                                return (
+                                                    <div key={friendId} className="flex items-center justify-between p-3 bg-accent rounded border border-fill">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                                                                {friend.profilePicture ? (
+                                                                    <img src={friend.profilePicture} alt={friend.name} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full bg-highlight flex items-center justify-center text-dark text-sm font-bold">
+                                                                        {friend.name?.charAt(0) || 'U'}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-khula font-medium text-dark">{friend.name}</div>
+                                                                <div className="font-khula text-sm text-darker">{friend.email}</div>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <div className="font-khula font-medium text-dark">{friend.name}</div>
-                                                            <div className="font-khula text-sm text-darker">{friend.email}</div>
-                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            className={`px-4 py-2 rounded font-khula transition-colors ${
+                                                                selectedFriends.includes(friendId)
+                                                                    ? 'bg-highlight text-dark hover:bg-yellow-400'
+                                                                    : 'bg-fill text-dark hover:bg-accent'
+                                                            }`}
+                                                            onClick={() => toggleFriendSelection(friendId)}
+                                                        >
+                                                            {selectedFriends.includes(friendId) ? 'Invited' : 'Invite'}
+                                                        </button>
                                                     </div>
-                                                    <button
-                                                        type="button"
-                                                        className={`px-4 py-2 rounded font-khula transition-colors ${
-                                                            selectedFriends.includes(friend.id)
-                                                                ? 'bg-highlight text-dark hover:bg-yellow-400'
-                                                                : 'bg-fill text-dark hover:bg-accent'
-                                                        }`}
-                                                        onClick={() => toggleFriendSelection(friend.id)}
-                                                    >
-                                                        {selectedFriends.includes(friend.id) ? 'Invited' : 'Invite'}
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                         {selectedFriends.length > 0 && (
                                             <div className="p-3 bg-yellow-50 border-t border-fill">

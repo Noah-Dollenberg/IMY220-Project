@@ -18,14 +18,13 @@ const Header = ({ currentUser, onLogout }) => {
 
     const loadNotifications = async () => {
         try {
-            const [friendRequests, projectInvitations] = await Promise.all([
-                friendsAPI.getRequests(),
-                projectsAPI.getInvitations()
-            ]);
+            const friendRequests = await friendsAPI.getRequests().catch(() => ({ requests: [] }));
+            const projectInvitations = await projectsAPI.getInvitations().catch(() => ({ invitations: [] }));
             const total = (friendRequests.requests?.length || 0) + (projectInvitations.invitations?.length || 0);
             setNotificationCount(total);
         } catch (error) {
             console.error('Failed to load notifications:', error);
+            setNotificationCount(0);
         }
     };
 

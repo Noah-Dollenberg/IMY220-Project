@@ -115,19 +115,7 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
         }
     };
 
-    const handleDeleteProject = async () => {
-        if (!isOwner || project.status !== 'checked-in') return;
 
-        if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
-            try {
-                await projectsAPI.delete(project._id);
-                onClose();
-                window.location.href = '/';
-            } catch (error) {
-                alert('Failed to delete project: ' + error.message);
-            }
-        }
-    };
 
     const toggleFileSelection = (fileName) => {
         setSelectedFiles(prev => 
@@ -378,29 +366,7 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                         </form>
                     </div>
 
-                    {/* Delete Project (Owner Only, Checked In) */}
-                    {isOwner && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <h3 className="font-inter text-lg font-bold text-red-800 mb-2">Danger Zone (Owner Only)</h3>
-                            {project.status === 'checked-in' ? (
-                                <>
-                                    <p className="font-khula text-red-700 mb-4">
-                                        Once you delete a project, there is no going back. Please be certain.
-                                    </p>
-                                    <button
-                                        onClick={handleDeleteProject}
-                                        className="px-4 py-2 bg-red-600 text-white rounded font-khula hover:bg-red-700"
-                                    >
-                                        Delete Project
-                                    </button>
-                                </>
-                            ) : (
-                                <p className="font-khula text-red-700">
-                                    Project must be checked in to delete.
-                                </p>
-                            )}
-                        </div>
-                    )}
+
                 </div>
             </div>
         </div>

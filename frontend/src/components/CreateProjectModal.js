@@ -15,6 +15,7 @@ const CreateProjectPage = ({ currentUser }) => {
   });
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [fileObjects, setFileObjects] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,16 +87,19 @@ const CreateProjectPage = ({ currentUser }) => {
   };
 
   const handleFiles = (files) => {
-    const fileArray = Array.from(files).map(file => ({
+    const fileArray = Array.from(files);
+    const fileInfo = fileArray.map(file => ({
       name: file.name,
       size: file.size,
       type: file.type
     }));
-    setUploadedFiles(prev => [...prev, ...fileArray]);
+    setUploadedFiles(prev => [...prev, ...fileInfo]);
+    setFileObjects(prev => [...prev, ...fileArray]);
   };
 
   const removeFile = (index) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    setFileObjects(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -114,10 +118,15 @@ const CreateProjectPage = ({ currentUser }) => {
         language: formData.language,
         version: formData.version,
         isPublic: formData.isPublic,
-        files: uploadedFiles.map(file => file.name)
+        files: []
       };
 
       const response = await projectsAPI.create(projectData);
+      
+      // Upload files if any
+      if (fileObjects.length > 0) {
+        await projectsAPI.uploadFiles(response.projectId, fileObjects);
+      }
 
       alert('Project created successfully!');
       navigate('/home');

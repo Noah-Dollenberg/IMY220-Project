@@ -175,6 +175,54 @@ export const projectsAPI = {
         return handleResponse(response);
     },
 
+    uploadFiles: async (projectId, files) => {
+        const formData = new FormData();
+        files.forEach(file => {
+            formData.append('files', file);
+        });
+
+        const token = localStorage.getItem('userToken');
+        const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/upload`, {
+            method: 'POST',
+            headers: {
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            },
+            body: formData
+        });
+        return handleResponse(response);
+    },
+
+    downloadFile: (projectId, filename) => {
+        const token = localStorage.getItem('userToken');
+        const url = `${API_BASE_URL}/api/projects/${projectId}/files/${filename}`;
+        
+        // Create a temporary link to trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.style.display = 'none';
+        
+        // Add authorization header by creating a fetch request and converting to blob
+        fetch(url, {
+            headers: {
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+            console.error('Download failed:', error);
+            throw error;
+        });
+    },
+
     addActivity: async (projectId, message) => {
         const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/activity`, {
             method: 'POST',
