@@ -28,7 +28,6 @@ const Header = ({ currentUser, onLogout }) => {
         }
     };
 
-    // Expose refresh function globally
     window.refreshNotifications = loadNotifications;
 
     const handleLogout = () => {
