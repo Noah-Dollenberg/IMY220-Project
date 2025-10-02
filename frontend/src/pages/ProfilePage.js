@@ -41,15 +41,18 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
 
             if (isOwnProfile) {
                 try {
-                    const [friendRequestsResponse, projectInvitationsResponse] = await Promise.all([
-                        friendsAPI.getRequests(),
-                        projectsAPI.getInvitations()
-                    ]);
+                    const friendRequestsResponse = await friendsAPI.getRequests().catch(() => ({ requests: [] }));
                     setFriendRequests(friendRequestsResponse.requests || []);
+                } catch (err) {
+                    console.error('Failed to load friend requests:', err);
+                    setFriendRequests([]);
+                }
+                
+                try {
+                    const projectInvitationsResponse = await projectsAPI.getInvitations().catch(() => ({ invitations: [] }));
                     setProjectInvitations(projectInvitationsResponse.invitations || []);
                 } catch (err) {
-                    console.error('Failed to load requests:', err);
-                    setFriendRequests([]);
+                    console.error('Failed to load project invitations:', err);
                     setProjectInvitations([]);
                 }
             }
@@ -98,6 +101,10 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
             setProjectInvitations(prev => prev.filter(inv => 
                 !(inv.projectId.toString() === projectId && inv.invitedBy.toString() === invitedBy)
             ));
+            // Refresh notifications in header
+            if (window.refreshNotifications) {
+                window.refreshNotifications();
+            }
             fetchProfileData(); // Refresh to show new project
         } catch (err) {
             alert('Failed to accept project invitation: ' + err.message);
@@ -110,6 +117,10 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
             setProjectInvitations(prev => prev.filter(inv => 
                 !(inv.projectId.toString() === projectId && inv.invitedBy.toString() === invitedBy)
             ));
+            // Refresh notifications in header
+            if (window.refreshNotifications) {
+                window.refreshNotifications();
+            }
         } catch (err) {
             alert('Failed to decline project invitation: ' + err.message);
         }

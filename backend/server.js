@@ -23,7 +23,7 @@ MongoClient.connect(MONGODB_URI)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Configure multer for file uploads
+// file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, '../uploads');
@@ -40,10 +40,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+    limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Serve uploaded files
+// Serve files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use(express.static(path.join(__dirname, '../frontend/public'), {
@@ -87,6 +87,14 @@ const checkUser = async (req, res, next) => {
         }
 
         const userId = tokenMatch[1];
+        
+        if (!ObjectId.isValid(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user ID format'
+            });
+        }
+        
         const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
 
         if (!user) {
@@ -395,6 +403,24 @@ app.put('/api/users/:id', checkUser, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error updating profile'
+        });
+    }
+});
+
+// IMPORTANT: Keep invitations route BEFORE other project routes
+app.get('/api/projects/invitations', checkUser, async (req, res) => {
+    try {
+        const userInvitations = req.user.projectInvitations || { sent: [], received: [] };
+        const receivedInvitations = userInvitations.received || [];
+        
+        res.json({
+            success: true,
+            invitations: receivedInvitations
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching project invitations'
         });
     }
 });
@@ -1072,6 +1098,7 @@ app.get('/api/search/projects', checkUser, async (req, res) => {
     }
 });
 
+// Make sure this comes after the invitations route
 app.get('/api/projects/:id', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1204,11 +1231,11 @@ app.post('/api/projects/:id/invite', checkUser, async (req, res) => {
             projectId: new ObjectId(id),
             userId: new ObjectId(userId),
             projectName: project.name,
-            invitedBy: req.user._id,
+            invitedBy: new ObjectId(req.user._id),
             invitedByName: req.user.name,
             createdAt: new Date()
         };
-
+        
         await db.collection('users').updateOne(
             { _id: req.user._id },
             { $push: { 'projectInvitations.sent': invitation } }
@@ -1317,60 +1344,13 @@ app.post('/api/projects/invitations/decline', checkUser, async (req, res) => {
     }
 });
 
-app.get('/api/projects/invitations', checkUser, async (req, res) => {
-    try {
-        const userInvitations = req.user.projectInvitations || { sent: [], received: [] };
-        const receivedInvitations = userInvitations.received || [];
-        
-        const invitationsWithDetails = await Promise.all(
-            receivedInvitations.map(async (invitation) => {
-                try {
-                    // Validate ObjectIds before querying
-                    if (!ObjectId.isValid(invitation.projectId) || !ObjectId.isValid(invitation.invitedBy)) {
-                        return {
-                            ...invitation,
-                            projectInfo: null,
-                            inviterInfo: null
-                        };
-                    }
-                    
-                    const project = await db.collection('projects').findOne({ _id: invitation.projectId });
-                    const inviter = await db.collection('users').findOne({ _id: invitation.invitedBy });
-                    
-                    return {
-                        ...invitation,
-                        projectInfo: project ? {
-                            name: project.name,
-                            description: project.description
-                        } : null,
-                        inviterInfo: inviter ? {
-                            name: inviter.name,
-                            email: inviter.email
-                        } : null
-                    };
-                } catch (err) {
-                    console.error('Error processing invitation:', err);
-                    return {
-                        ...invitation,
-                        projectInfo: null,
-                        inviterInfo: null
-                    };
-                }
-            })
-        );
-
-        res.json({
-            success: true,
-            invitations: invitationsWithDetails.filter(inv => inv.projectInfo && inv.inviterInfo)
-        });
-    } catch (error) {
-        console.error('Get project invitations error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error fetching project invitations'
-        });
-    }
+// Test endpoint
+app.get('/api/test', (req, res) => {
+    console.log('TEST ENDPOINT HIT');
+    res.json({ success: true, message: 'Server is working' });
 });
+
+
 
 // Migration endpoint to add missing fields to existing users
 app.post('/api/migrate/add-user-fields', async (req, res) => {
@@ -1671,6 +1651,13 @@ app.delete('/api/projects/:id/files', checkUser, async (req, res) => {
             return res.status(403).json({
                 success: false,
                 message: 'You are not a member of this project'
+            });
+        }
+
+        if (project.status !== 'checked-out' || project.checkedOutBy.toString() !== req.user._id.toString()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Project must be checked out by you to remove files'
             });
         }
 
