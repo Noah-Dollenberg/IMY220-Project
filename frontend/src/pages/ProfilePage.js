@@ -29,19 +29,15 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
         setError(null);
 
         try {
-            const [userResponse, projectsResponse, friendsResponse] = await Promise.all([
+            const [userResponse, userProjectsResponse, friendsResponse] = await Promise.all([
                 usersAPI.getById(userId),
-                projectsAPI.getAll(),
+                usersAPI.getProjects(userId),
                 friendsAPI.getFriends(userId)
             ]);
 
             setProfileUser(userResponse.user);
             setFriends(friendsResponse.friends || []);
-
-            const userOwnedProjects = projectsResponse.projects.filter(
-                project => project.owner.toString() === userId
-            );
-            setUserProjects(userOwnedProjects);
+            setUserProjects(userProjectsResponse.projects || []);
 
             if (isOwnProfile) {
                 try {
@@ -116,6 +112,18 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
             ));
         } catch (err) {
             alert('Failed to decline project invitation: ' + err.message);
+        }
+    };
+
+    const handleRemoveProject = async (projectId) => {
+        if (window.confirm('Are you sure you want to remove this project from your list?')) {
+            try {
+                await projectsAPI.removeFromUserList(userId, projectId);
+                setUserProjects(prev => prev.filter(project => project._id !== projectId));
+                alert('Project removed from your list');
+            } catch (err) {
+                alert('Failed to remove project: ' + err.message);
+            }
         }
     };
 
@@ -349,28 +357,45 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                             <div className="bg-white rounded p-6">
                                 <div className="mb-6">
                                     <h2 className="font-inter text-2xl font-bold text-dark mb-1">Projects</h2>
-                                    <p className="font-khula text-darker">Projects {isOwnProfile ? "you've" : `${profileUser?.name} has`} created</p>
+                                    <p className="font-khula text-darker">
+                                        {isOwnProfile ? "Your projects" : `${profileUser?.name}'s projects`}
+                                        {isOwnProfile && " (including projects you've been removed from)"}
+                                    </p>
                                 </div>
 
                                 <div className="space-y-4">
                                     {userProjects.length > 0 ? (
                                         userProjects.map(project => (
-                                            <ProjectPreview
-                                                key={project._id}
-                                                project={{
-                                                    id: project._id,
-                                                    name: project.name,
-                                                    description: project.description,
-                                                    contributors: project.members?.length || 0,
-                                                    status: project.status,
-                                                    lastUpdate: new Date(project.updatedAt).toLocaleDateString(),
-                                                    owner: {
-                                                        name: profileUser.name,
-                                                        avatar: profileUser.name?.charAt(0) || 'U'
-                                                    }
-                                                }}
-                                                showContributors={true}
-                                            />
+                                            <div key={project._id} className="relative">
+                                                <div className={`${project.isRemoved ? 'opacity-60 border-2 border-red-300' : ''}`}>
+                                                    <ProjectPreview
+                                                        project={{
+                                                            id: project._id,
+                                                            name: project.isRemoved ? `${project.name} (Removed)` : project.name,
+                                                            description: project.description,
+                                                            contributors: project.members?.length || 0,
+                                                            status: project.status,
+                                                            lastUpdate: new Date(project.updatedAt).toLocaleDateString(),
+                                                            owner: {
+                                                                name: project.ownerInfo?.name || 'Unknown',
+                                                                avatar: project.ownerInfo?.name?.charAt(0) || 'U'
+                                                            }
+                                                        }}
+                                                        showContributors={true}
+                                                    />
+                                                </div>
+                                                {project.isRemoved && isOwnProfile && (
+                                                    <div className="absolute top-2 right-2">
+                                                        <button
+                                                            onClick={() => handleRemoveProject(project._id)}
+                                                            className="bg-red-500 text-white px-3 py-1 rounded text-sm font-khula hover:bg-red-600"
+                                                            title="Remove from your list"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         ))
                                     ) : (
                                         <div className="text-center py-8">

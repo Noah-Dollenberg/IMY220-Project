@@ -122,6 +122,66 @@ export const projectsAPI = {
             headers: getAuthHeaders()
         });
         return handleResponse(response);
+    },
+
+    update: async (id, projectData) => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(projectData)
+        });
+        return handleResponse(response);
+    },
+
+    removeMember: async (projectId, memberId) => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/members/${memberId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
+    },
+
+    addFiles: async (projectId, files) => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/files`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ files })
+        });
+        return handleResponse(response);
+    },
+
+    removeFiles: async (projectId, files) => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/files`, {
+            method: 'DELETE',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ files })
+        });
+        return handleResponse(response);
+    },
+
+    delete: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
+    },
+
+    removeFromUserList: async (userId, projectId) => {
+        const response = await fetch(`${API_BASE_URL}/api/users/${userId}/projects/${projectId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
+    },
+
+    addActivity: async (projectId, message) => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/activity`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ message })
+        });
+        return handleResponse(response);
     }
 };
 

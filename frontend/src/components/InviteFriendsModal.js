@@ -55,60 +55,61 @@ const InviteFriendsModal = ({ projectId, onClose, onInviteSent }) => {
     };
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <button className="modal-close" onClick={onClose}>×</button>
-                
-                <div className="form-header">
-                    <h3>Invite Friends to Project</h3>
-                    <p>Select friends to invite to collaborate on this project</p>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 max-h-96" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-6 border-b border-fill">
+                    <div>
+                        <h3 className="font-inter text-lg font-bold text-dark">Invite Friends to Project</h3>
+                        <p className="font-khula text-darker text-sm">Select friends to invite to collaborate on this project</p>
+                    </div>
+                    <button className="text-darker hover:text-dark text-2xl" onClick={onClose}>×</button>
                 </div>
 
-                <div className="form-group">
+                <div className="p-6">
                     <input
                         type="text"
-                        className="form-input"
+                        className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight mb-4"
                         placeholder="Search friends..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                </div>
 
-                <div className="friends-invite-list">
-                    {loading ? (
-                        <div className="loading-message">Loading friends...</div>
-                    ) : filteredFriends.length === 0 ? (
-                        <div className="empty-state">
-                            <p>{searchQuery ? 'No friends found matching your search' : 'No friends to invite'}</p>
-                        </div>
-                    ) : (
-                        filteredFriends.map(friend => (
-                            <div key={friend._id} className="friend-invite-item">
-                                <div className="friend-avatar">
-                                    {friend.profilePicture ? (
-                                        <img src={friend.profilePicture} alt="Profile" className="avatar-image" />
-                                    ) : (
-                                        <div className="default-avatar">👤</div>
-                                    )}
-                                </div>
-                                <div className="friend-details">
-                                    <span className="friend-name">{friend.name}</span>
-                                    <span className="friend-email">{friend.email}</span>
-                                </div>
-                                <button
-                                    className="btn btn-primary btn-small"
-                                    onClick={() => handleInvite(friend._id)}
-                                    disabled={inviting.has(friend._id)}
-                                >
-                                    {inviting.has(friend._id) ? 'Inviting...' : 'Invite'}
-                                </button>
+                    <div className="max-h-48 overflow-y-auto space-y-3">
+                        {loading ? (
+                            <div className="text-center py-4 font-khula text-darker">Loading friends...</div>
+                        ) : filteredFriends.length === 0 ? (
+                            <div className="text-center py-8">
+                                <p className="font-khula text-darker">{searchQuery ? 'No friends found matching your search' : 'No friends to invite'}</p>
                             </div>
-                        ))
-                    )}
+                        ) : (
+                            filteredFriends.map(friend => (
+                                <div key={friend._id} className="flex items-center gap-3 p-3 bg-accent rounded-lg">
+                                    <div className="w-10 h-10 bg-highlight rounded-full flex items-center justify-center text-dark font-inter font-semibold flex-shrink-0">
+                                        {friend.profilePicture ? (
+                                            <img src={friend.profilePicture} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                                        ) : (
+                                            friend.name?.charAt(0) || '👤'
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="font-khula font-medium text-dark">{friend.name}</div>
+                                        <div className="font-khula text-sm text-darker truncate">{friend.email}</div>
+                                    </div>
+                                    <button
+                                        className="px-3 py-1 bg-highlight text-dark rounded font-khula hover:bg-yellow-400 transition-colors disabled:opacity-50 text-sm"
+                                        onClick={() => handleInvite(friend._id)}
+                                        disabled={inviting.has(friend._id)}
+                                    >
+                                        {inviting.has(friend._id) ? 'Inviting...' : 'Invite'}
+                                    </button>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
 
-                <div className="form-actions">
-                    <button className="btn btn-secondary" onClick={onClose}>
+                <div className="p-6 border-t border-fill">
+                    <button className="w-full px-4 py-2 bg-gray-200 text-dark rounded font-khula hover:bg-gray-300 transition-colors" onClick={onClose}>
                         Close
                     </button>
                 </div>

@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import InviteFriendsModal from '../components/InviteFriendsModal';
 import ProjectActivityList from '../components/ProjectActivityList';
+import ProjectEditModal from '../components/ProjectEditModal';
 import { projectsAPI, activityAPI } from '../services/api';
 
 const ProjectPage = ({ currentUser, onLogout }) => {
@@ -20,6 +21,8 @@ const ProjectPage = ({ currentUser, onLogout }) => {
         files: []
     });
     const [showInviteFriends, setShowInviteFriends] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         fetchProject();
@@ -48,7 +51,6 @@ const ProjectPage = ({ currentUser, onLogout }) => {
         try {
             await projectsAPI.checkout(projectId);
             await fetchProject();
-            alert('Project checked out successfully!');
         } catch (err) {
             alert('Failed to checkout project: ' + err.message);
         } finally {
@@ -74,7 +76,6 @@ const ProjectPage = ({ currentUser, onLogout }) => {
             );
             await fetchProject();
             setCheckinData({ message: '', version: project.version, files: [] });
-            alert('Project checked in successfully!');
         } catch (err) {
             alert('Failed to checkin project: ' + err.message);
         } finally {
@@ -103,6 +104,34 @@ const ProjectPage = ({ currentUser, onLogout }) => {
 
     const handleCloseInviteModal = () => {
         setShowInviteFriends(false);
+    };
+
+    const handleEditProject = () => {
+        setShowEditModal(true);
+    };
+
+    const handleCloseEditModal = () => {
+        setShowEditModal(false);
+    };
+
+    const handleProjectUpdate = () => {
+        fetchProject();
+    };
+
+    const handleDeleteProject = async () => {
+        if (!window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+            return;
+        }
+
+        setDeleting(true);
+        try {
+            await projectsAPI.delete(projectId);
+            window.location.href = '/';
+        } catch (err) {
+            alert('Failed to delete project: ' + err.message);
+        } finally {
+            setDeleting(false);
+        }
     };
 
     const handleDeleteActivity = async (activityId) => {
@@ -241,6 +270,16 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                         </div>
                     )}
 
+                    {isProjectOwner && (
+                        <button
+                            className="px-6 py-3 bg-red-500 text-white rounded font-khula hover:bg-red-600 transition-colors disabled:opacity-50"
+                            onClick={handleDeleteProject}
+                            disabled={deleting}
+                        >
+                            {deleting ? 'Deleting...' : 'Delete Project'}
+                        </button>
+                    )}
+
                     {!isProjectMember && (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                             <p className="font-khula text-yellow-800">You are not a member of this project</p>
@@ -326,14 +365,25 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                                     </div>
                                 </div>
                                 
-                                {isProjectOwner && (
-                                    <button
-                                        className="px-4 py-2 bg-highlight text-dark rounded font-khula hover:bg-yellow-400 transition-colors"
-                                        onClick={handleInviteFriends}
-                                    >
-                                        Invite Friends
-                                    </button>
-                                )}
+                                <div className="flex gap-2">
+                                    {isProjectOwner && (
+                                        <button
+                                            className="px-4 py-2 bg-highlight text-dark rounded font-khula hover:bg-yellow-400 transition-colors"
+                                            onClick={handleInviteFriends}
+                                        >
+                                            Invite Friends
+                                        </button>
+                                    )}
+                                    {isProjectMember && project?.status === 'checked-out' && 
+                                     project?.checkedOutBy?.toString() === currentUser?._id && (
+                                        <button
+                                            className="px-4 py-2 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 transition-colors"
+                                            onClick={handleEditProject}
+                                        >
+                                            Edit Project
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -384,6 +434,15 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                     projectId={projectId}
                     onClose={handleCloseInviteModal}
                     onInviteSent={handleInviteSent}
+                />
+            )}
+
+            {showEditModal && (
+                <ProjectEditModal
+                    project={project}
+                    currentUser={currentUser}
+                    onClose={handleCloseEditModal}
+                    onUpdate={handleProjectUpdate}
                 />
             )}
         </div>

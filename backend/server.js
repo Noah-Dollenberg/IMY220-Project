@@ -1383,7 +1383,7 @@ app.get('/api/users/:id/projects', checkUser, async (req, res) => {
             .sort({ updatedAt: -1 })
             .toArray();
 
-        // Add owner info to each project
+        // Add owner info and check if user was removed
         for (let project of projects) {
             const owner = await db.collection('users').findOne({ _id: project.owner });
             if (owner) {
@@ -1393,6 +1393,10 @@ app.get('/api/users/:id/projects', checkUser, async (req, res) => {
                     email: owner.email
                 };
             }
+            
+            // Check if user is still a member
+            const isStillMember = project.members.some(member => member.toString() === id);
+            project.isRemoved = !isStillMember;
         }
 
         res.json({
@@ -1404,6 +1408,366 @@ app.get('/api/users/:id/projects', checkUser, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error fetching user projects'
+        });
+    }
+});
+
+// Update project details (owner only, when checked out)
+app.put('/api/projects/:id', checkUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, image, version } = req.body;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID format'
+            });
+        }
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(id) });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found'
+            });
+        }
+
+        if (project.owner.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only project owner can update project details'
+            });
+        }
+
+        if (project.status !== 'checked-out' || project.checkedOutBy.toString() !== req.user._id.toString()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Project must be checked out by you to make changes'
+            });
+        }
+
+        const updateData = {
+            updatedAt: new Date()
+        };
+        
+        if (name) updateData.name = name;
+        if (description) updateData.description = description;
+        if (image !== undefined) updateData.image = image;
+        if (version) updateData.version = version;
+
+        await db.collection('projects').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updateData }
+        );
+
+        res.json({
+            success: true,
+            message: 'Project updated successfully'
+        });
+    } catch (error) {
+        console.error('Update project error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating project'
+        });
+    }
+});
+
+// Remove member from project (owner only, when checked out)
+app.delete('/api/projects/:id/members/:memberId', checkUser, async (req, res) => {
+    try {
+        const { id, memberId } = req.params;
+        
+        if (!ObjectId.isValid(id) || !ObjectId.isValid(memberId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project or member ID format'
+            });
+        }
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(id) });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found'
+            });
+        }
+
+        if (project.owner.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only project owner can remove members'
+            });
+        }
+
+        if (project.status !== 'checked-out' || project.checkedOutBy.toString() !== req.user._id.toString()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Project must be checked out by you to remove members'
+            });
+        }
+
+        if (memberId === req.user._id.toString()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot remove yourself from the project'
+            });
+        }
+
+        await db.collection('projects').updateOne(
+            { _id: new ObjectId(id) },
+            { $pull: { members: new ObjectId(memberId) } }
+        );
+
+        res.json({
+            success: true,
+            message: 'Member removed successfully'
+        });
+    } catch (error) {
+        console.error('Remove member error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error removing member'
+        });
+    }
+});
+
+// Add files to project (members only, when checked out)
+app.post('/api/projects/:id/files', checkUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { files } = req.body;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID format'
+            });
+        }
+
+        if (!files || !Array.isArray(files) || files.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Files array is required'
+            });
+        }
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(id) });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found'
+            });
+        }
+
+        if (!project.members.some(member => member.toString() === req.user._id.toString())) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not a member of this project'
+            });
+        }
+
+        if (project.status !== 'checked-out' || project.checkedOutBy.toString() !== req.user._id.toString()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Project must be checked out by you to add files'
+            });
+        }
+
+        await db.collection('projects').updateOne(
+            { _id: new ObjectId(id) },
+            { 
+                $addToSet: { files: { $each: files } },
+                $set: { updatedAt: new Date() }
+            }
+        );
+
+        res.json({
+            success: true,
+            message: 'Files added successfully'
+        });
+    } catch (error) {
+        console.error('Add files error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error adding files'
+        });
+    }
+});
+
+// Remove files from project (members only, when checked out)
+app.delete('/api/projects/:id/files', checkUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { files } = req.body;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID format'
+            });
+        }
+
+        if (!files || !Array.isArray(files) || files.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Files array is required'
+            });
+        }
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(id) });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found'
+            });
+        }
+
+        if (!project.members.some(member => member.toString() === req.user._id.toString())) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not a member of this project'
+            });
+        }
+
+        if (project.status !== 'checked-out' || project.checkedOutBy.toString() !== req.user._id.toString()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Project must be checked out by you to remove files'
+            });
+        }
+
+        await db.collection('projects').updateOne(
+            { _id: new ObjectId(id) },
+            { 
+                $pullAll: { files: files },
+                $set: { updatedAt: new Date() }
+            }
+        );
+
+        res.json({
+            success: true,
+            message: 'Files removed successfully'
+        });
+    } catch (error) {
+        console.error('Remove files error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error removing files'
+        });
+    }
+});
+
+// Delete project (owner only, when checked in)
+app.delete('/api/projects/:id', checkUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID format'
+            });
+        }
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(id) });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found'
+            });
+        }
+
+        if (project.owner.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only project owner can delete the project'
+            });
+        }
+
+        if (project.status !== 'checked-in') {
+            return res.status(400).json({
+                success: false,
+                message: 'Project must be checked in to delete'
+            });
+        }
+
+        // Remove project from all users' projects arrays
+        await db.collection('users').updateMany(
+            { projects: new ObjectId(id) },
+            { $pull: { projects: new ObjectId(id) } }
+        );
+
+        // Delete project activities
+        await db.collection('checkins').deleteMany({ projectId: new ObjectId(id) });
+
+        // Delete the project
+        await db.collection('projects').deleteOne({ _id: new ObjectId(id) });
+
+        res.json({
+            success: true,
+            message: 'Project deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete project error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting project'
+        });
+    }
+});
+
+// Remove project from user's list (for removed participants only)
+app.delete('/api/users/:userId/projects/:projectId', checkUser, async (req, res) => {
+    try {
+        const { userId, projectId } = req.params;
+        
+        if (!ObjectId.isValid(userId) || !ObjectId.isValid(projectId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid user or project ID format'
+            });
+        }
+
+        if (userId !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'You can only remove projects from your own list'
+            });
+        }
+
+        const project = await db.collection('projects').findOne({ _id: new ObjectId(projectId) });
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: 'Project not found'
+            });
+        }
+
+        // Check if user is no longer a member (was removed)
+        const isStillMember = project.members.some(member => member.toString() === userId);
+        if (isStillMember) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot remove project - you are still a member'
+            });
+        }
+
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(userId) },
+            { $pull: { projects: new ObjectId(projectId) } }
+        );
+
+        res.json({
+            success: true,
+            message: 'Project removed from your list'
+        });
+    } catch (error) {
+        console.error('Remove project from user error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error removing project from user list'
         });
     }
 });
