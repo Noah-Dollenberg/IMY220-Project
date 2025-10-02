@@ -350,5 +350,13 @@ export const friendsAPI = {
             headers: getAuthHeaders()
         });
         return handleResponse(response);
+    },
+
+    removeFriend: async (friendId) => {
+        const response = await fetch(`${API_BASE_URL}/api/friends/${friendId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
     }
 };

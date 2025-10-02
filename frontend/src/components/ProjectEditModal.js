@@ -10,9 +10,8 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
         image: project.image || null
     });
     const [loading, setLoading] = useState(false);
-    const [newFiles, setNewFiles] = useState('');
-    const [selectedFiles, setSelectedFiles] = useState([]);
-    const [newActivity, setNewActivity] = useState('');
+
+
 
     const isOwner = project.owner?.toString() === currentUser?._id;
     const isMember = project.members?.some(member => member.toString() === currentUser?._id);
@@ -71,87 +70,13 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
         }
     };
 
-    const handleAddFiles = async (e) => {
-        e.preventDefault();
-        if (!newFiles.trim() || !isCheckedOutByUser) return;
-
-        const files = newFiles.split(',').map(f => f.trim()).filter(f => f);
-        try {
-            await projectsAPI.addFiles(project._id, files);
-            setNewFiles('');
-            onUpdate();
-            alert('Files added successfully!');
-        } catch (error) {
-            alert('Failed to add files: ' + error.message);
-        }
-    };
-
-    const handleRemoveFiles = async () => {
-        if (selectedFiles.length === 0 || !isCheckedOutByUser) return;
-
-        if (window.confirm(`Remove ${selectedFiles.length} selected file(s)?`)) {
-            try {
-                await projectsAPI.removeFiles(project._id, selectedFiles);
-                setSelectedFiles([]);
-                onUpdate();
-                alert('Files removed successfully!');
-            } catch (error) {
-                alert('Failed to remove files: ' + error.message);
-            }
-        }
-    };
-
-    const handleAddActivity = async (e) => {
-        e.preventDefault();
-        if (!newActivity.trim() || !isCheckedOutByUser) return;
-
-        try {
-            await projectsAPI.addActivity(project._id, newActivity);
-            setNewActivity('');
-            onUpdate();
-            alert('Activity added successfully!');
-        } catch (error) {
-            alert('Failed to add activity: ' + error.message);
-        }
-    };
 
 
 
-    const toggleFileSelection = (fileName) => {
-        setSelectedFiles(prev => 
-            prev.includes(fileName) 
-                ? prev.filter(f => f !== fileName)
-                : [...prev, fileName]
-        );
-    };
 
-    const handleDownloadFile = (fileName) => {
-        // Create a simple text file for demonstration
-        const content = `File: ${fileName}\nProject: ${project.name}\nDownloaded: ${new Date().toISOString()}`;
-        const blob = new Blob([content], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    };
 
-    const handleDownloadSelected = () => {
-        selectedFiles.forEach(fileName => {
-            setTimeout(() => handleDownloadFile(fileName), 100);
-        });
-    };
 
-    const handleDownloadAll = () => {
-        if (project.files?.length > 0) {
-            project.files.forEach((fileName, index) => {
-                setTimeout(() => handleDownloadFile(fileName), index * 100);
-            });
-        }
-    };
+
 
     if (!isCheckedOutByUser) {
         return (
@@ -274,97 +199,9 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                         </div>
                     )}
 
-                    {/* File Management */}
-                    <div className="bg-accent rounded-lg p-4">
-                        <h3 className="font-inter text-lg font-bold text-dark mb-4">Files (All Members)</h3>
-                        
-                        {/* Add Files */}
-                        <form onSubmit={handleAddFiles} className="mb-4">
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={newFiles}
-                                    onChange={(e) => setNewFiles(e.target.value)}
-                                    placeholder="Enter file names (comma separated)"
-                                    className="flex-1 px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
-                                />
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-green-500 text-white rounded font-khula hover:bg-green-600"
-                                >
-                                    Add Files
-                                </button>
-                            </div>
-                        </form>
 
-                        {/* File List */}
-                        <div className="space-y-2 mb-4">
-                            {project.files?.map((fileName, index) => (
-                                <div key={index} className="flex items-center gap-3 p-2 bg-white rounded">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedFiles.includes(fileName)}
-                                        onChange={() => toggleFileSelection(fileName)}
-                                        className="w-4 h-4"
-                                    />
-                                    <span className="font-khula text-dark flex-1">{fileName}</span>
-                                    <button
-                                        onClick={() => handleDownloadFile(fileName)}
-                                        className="px-2 py-1 bg-blue-500 text-white rounded text-sm font-khula hover:bg-blue-600"
-                                    >
-                                        Download
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
 
-                        <div className="flex gap-2">
-                            {selectedFiles.length > 0 && (
-                                <>
-                                    <button
-                                        onClick={handleRemoveFiles}
-                                        className="px-4 py-2 bg-red-500 text-white rounded font-khula hover:bg-red-600"
-                                    >
-                                        Remove Selected ({selectedFiles.length})
-                                    </button>
-                                    <button
-                                        onClick={handleDownloadSelected}
-                                        className="px-4 py-2 bg-green-500 text-white rounded font-khula hover:bg-green-600"
-                                    >
-                                        Download Selected ({selectedFiles.length})
-                                    </button>
-                                </>
-                            )}
-                            {project.files?.length > 0 && (
-                                <button
-                                    onClick={handleDownloadAll}
-                                    className="px-4 py-2 bg-purple-500 text-white rounded font-khula hover:bg-purple-600"
-                                >
-                                    Download All Files
-                                </button>
-                            )}
-                        </div>
-                    </div>
 
-                    {/* Add Activity */}
-                    <div className="bg-accent rounded-lg p-4">
-                        <h3 className="font-inter text-lg font-bold text-dark mb-4">Add Activity (All Members)</h3>
-                        <form onSubmit={handleAddActivity} className="space-y-4">
-                            <textarea
-                                value={newActivity}
-                                onChange={(e) => setNewActivity(e.target.value)}
-                                placeholder="Describe what you're working on..."
-                                rows="3"
-                                className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
-                            />
-                            <button
-                                type="submit"
-                                className="px-4 py-2 bg-blue-500 text-white rounded font-khula hover:bg-blue-600"
-                            >
-                                Add Activity
-                            </button>
-                        </form>
-                    </div>
 
 
                 </div>

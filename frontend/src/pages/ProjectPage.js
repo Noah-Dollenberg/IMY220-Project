@@ -218,69 +218,70 @@ const ProjectPage = ({ currentUser, onLogout }) => {
 
             <div className="bg-accent rounded-lg p-6">
                 <h3 className="font-inter text-lg font-bold text-dark mb-4">Actions</h3>
-                <div className="flex justify-between items-start gap-4">
-                    <div className="space-y-4">
-                        {canCheckout && (
-                            <button
-                                className="px-6 py-3 bg-green-500 text-white rounded font-khula hover:bg-green-600 transition-colors disabled:opacity-50"
-                                onClick={handleCheckout}
-                                disabled={checkingOut}
-                            >
-                                {checkingOut ? 'Checking Out...' : 'Check Out Project'}
-                            </button>
-                        )}
-
-                        {canCheckin && (
-                            <div className="bg-white rounded-lg p-4 border border-fill">
-                                <h4 className="font-inter text-base font-bold text-dark mb-4">Check In Project</h4>
-                                <form onSubmit={handleCheckin} className="space-y-4">
-                                    <div>
-                                        <label className="block font-khula font-medium text-dark mb-2">Check-in Message</label>
-                                        <textarea
-                                            value={checkinData.message}
-                                            onChange={(e) => setCheckinData(prev => ({
-                                                ...prev,
-                                                message: e.target.value
-                                            }))}
-                                            placeholder="Describe your changes..."
-                                            rows="3"
-                                            className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block font-khula font-medium text-dark mb-2">Version</label>
-                                        <input
-                                            type="text"
-                                            value={checkinData.version}
-                                            onChange={(e) => setCheckinData(prev => ({
-                                                ...prev,
-                                                version: e.target.value
-                                            }))}
-                                            placeholder="1.0.1"
-                                            className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
-                                            required
-                                        />
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        className="px-6 py-3 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 transition-colors disabled:opacity-50"
-                                        disabled={checkingIn}
-                                    >
-                                        {checkingIn ? 'Checking In...' : 'Check In Project'}
-                                    </button>
-                                </form>
-                            </div>
-                        )}
-
-                        {!isProjectMember && (
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                <p className="font-khula text-yellow-800">You are not a member of this project</p>
-                            </div>
-                        )}
+                
+                {canCheckout && (
+                    <div className="mb-4">
+                        <button
+                            className="px-6 py-3 bg-green-500 text-white rounded font-khula hover:bg-green-600 transition-colors disabled:opacity-50"
+                            onClick={handleCheckout}
+                            disabled={checkingOut}
+                        >
+                            {checkingOut ? 'Checking Out...' : 'Check Out Project'}
+                        </button>
                     </div>
+                )}
 
-                    {isProjectOwner && project?.status === 'checked-in' && (
+                {canCheckin && (
+                    <div className="bg-white rounded-lg p-4 border border-fill mb-4">
+                        <h4 className="font-inter text-base font-bold text-dark mb-4">Check In Project</h4>
+                        <form onSubmit={handleCheckin} className="space-y-4">
+                            <div>
+                                <label className="block font-khula font-medium text-dark mb-2">Check-in Message</label>
+                                <textarea
+                                    value={checkinData.message}
+                                    onChange={(e) => setCheckinData(prev => ({
+                                        ...prev,
+                                        message: e.target.value
+                                    }))}
+                                    placeholder="Describe your changes..."
+                                    rows="3"
+                                    className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block font-khula font-medium text-dark mb-2">Version</label>
+                                <input
+                                    type="text"
+                                    value={checkinData.version}
+                                    onChange={(e) => setCheckinData(prev => ({
+                                        ...prev,
+                                        version: e.target.value
+                                    }))}
+                                    placeholder="1.0.1"
+                                    className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
+                                    required
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="px-6 py-3 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 transition-colors disabled:opacity-50"
+                                disabled={checkingIn}
+                            >
+                                {checkingIn ? 'Checking In...' : 'Check In Project'}
+                            </button>
+                        </form>
+                    </div>
+                )}
+
+                {!isProjectMember && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                        <p className="font-khula text-yellow-800">You are not a member of this project</p>
+                    </div>
+                )}
+
+                {isProjectOwner && project?.status === 'checked-in' && (
+                    <div>
                         <button
                             className="px-6 py-3 bg-red-500 text-white rounded font-khula hover:bg-red-600 transition-colors disabled:opacity-50"
                             onClick={handleDeleteProject}
@@ -288,8 +289,8 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                         >
                             {deleting ? 'Deleting...' : 'Delete Project'}
                         </button>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -499,7 +500,7 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                                             Invite Friends
                                         </button>
                                     )}
-                                    {isProjectMember && project?.status === 'checked-out' && 
+                                    {isProjectOwner && project?.status === 'checked-out' && 
                                      project?.checkedOutBy?.toString() === currentUser?._id && (
                                         <button
                                             className="px-4 py-2 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 transition-colors"

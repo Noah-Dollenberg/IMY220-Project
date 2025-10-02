@@ -138,6 +138,17 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
         }
     };
 
+    const handleRemoveFriend = async (friendId) => {
+        if (window.confirm('Are you sure you want to remove this friend?')) {
+            try {
+                await friendsAPI.removeFriend(friendId);
+                setFriends(prev => prev.filter(friend => friend._id !== friendId));
+            } catch (err) {
+                alert('Failed to remove friend: ' + err.message);
+            }
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-accent">
@@ -345,13 +356,23 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                     <div className="font-khula text-xs text-darker">{friend.email}</div>
                                                 </div>
                                                 {friend._id !== currentUser._id && (
-                                                    <button 
-                                                        className="bg-fill text-dark px-2 py-1 rounded font-khula text-xs hover:bg-accent transition-colors leading-tight"
-                                                        onClick={() => navigate(`/profile/${friend._id}`)}
-                                                    >
-                                                        <div>View</div>
-                                                        <div>Profile</div>
-                                                    </button>
+                                                    <div className="flex gap-1">
+                                                        <button 
+                                                            className="bg-fill text-dark px-2 py-1 rounded font-khula text-xs hover:bg-accent transition-colors leading-tight"
+                                                            onClick={() => navigate(`/profile/${friend._id}`)}
+                                                        >
+                                                            <div>View</div>
+                                                            <div>Profile</div>
+                                                        </button>
+                                                        {isOwnProfile && (
+                                                            <button 
+                                                                className="bg-red-500 text-white px-2 py-1 rounded font-khula text-xs hover:bg-red-600 transition-colors"
+                                                                onClick={() => handleRemoveFriend(friend._id)}
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
                                         ))

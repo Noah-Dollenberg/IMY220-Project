@@ -955,6 +955,40 @@ app.get('/api/friends/requests', checkUser, async (req, res) => {
     }
 });
 
+app.delete('/api/friends/:friendId', checkUser, async (req, res) => {
+    try {
+        const { friendId } = req.params;
+
+        if (!ObjectId.isValid(friendId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid friend ID'
+            });
+        }
+
+        await db.collection('users').updateOne(
+            { _id: req.user._id },
+            { $pull: { friends: new ObjectId(friendId) } }
+        );
+
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(friendId) },
+            { $pull: { friends: req.user._id } }
+        );
+
+        res.json({
+            success: true,
+            message: 'Friend removed successfully'
+        });
+    } catch (error) {
+        console.error('Remove friend error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error removing friend'
+        });
+    }
+});
+
 app.get('/api/friends/:userId', checkUser, async (req, res) => {
     try {
         const { userId } = req.params;
