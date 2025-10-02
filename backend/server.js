@@ -1787,6 +1787,19 @@ app.delete('/api/projects/:id', checkUser, async (req, res) => {
             });
         }
 
+        // Delete all project files from filesystem
+        if (project.files && project.files.length > 0) {
+            project.files.forEach(file => {
+                const filename = typeof file === 'string' ? file : file.filename;
+                if (filename) {
+                    const filePath = path.join(__dirname, '../uploads', filename);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                }
+            });
+        }
+
         // Remove project from all users' projects arrays
         await db.collection('users').updateMany(
             { projects: new ObjectId(id) },
