@@ -131,6 +131,14 @@ export const activityAPI = {
             headers: getAuthHeaders()
         });
         return handleResponse(response);
+    },
+
+    delete: async (activityId) => {
+        const response = await fetch(`${API_BASE_URL}/api/activity/${activityId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
     }
 };
 

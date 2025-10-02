@@ -523,6 +523,52 @@ app.get('/api/activity/:feedType', checkUser, async (req, res) => {
     }
 });
 
+app.delete('/api/activity/:id', checkUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid activity ID format'
+            });
+        }
+
+        const activity = await db.collection('checkins').findOne({ _id: new ObjectId(id) });
+        if (!activity) {
+            return res.status(404).json({
+                success: false,
+                message: 'Activity not found'
+            });
+        }
+
+        // Check if user has permission to delete (activity owner or project owner)
+        const project = await db.collection('projects').findOne({ _id: activity.projectId });
+        const canDelete = activity.userId.toString() === req.user._id.toString() || 
+                         (project && project.owner.toString() === req.user._id.toString());
+
+        if (!canDelete) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to delete this activity'
+            });
+        }
+
+        await db.collection('checkins').deleteOne({ _id: new ObjectId(id) });
+
+        res.json({
+            success: true,
+            message: 'Activity deleted successfully'
+        });
+    } catch (error) {
+        console.error('Delete activity error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting activity'
+        });
+    }
+});
+
 app.post('/api/projects/:id/checkout', checkUser, async (req, res) => {
     try {
         const { id } = req.params;

@@ -1,6 +1,7 @@
 // NJ (Noah) Dollenberg u24596142 41
 import React, { useState, useEffect } from 'react';
 import ProjectPreview from './ProjectPreview';
+import ActivityList from './ActivityList';
 import { projectsAPI, activityAPI } from '../services/api';
 
 const Feed = ({ feedType = 'local' }) => {
@@ -50,6 +51,15 @@ const Feed = ({ feedType = 'local' }) => {
 
     const handleRefresh = () => {
         fetchData();
+    };
+
+    const handleDeleteActivity = async (activityId) => {
+        try {
+            await activityAPI.delete(activityId);
+            setActivities(prev => prev.filter(activity => activity._id !== activityId));
+        } catch (err) {
+            alert('Failed to delete activity: ' + err.message);
+        }
     };
 
     if (loading) {
@@ -135,8 +145,8 @@ const Feed = ({ feedType = 'local' }) => {
 
             <div>
                 {feedType === 'local' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2">
                             <h3 className="font-inter text-base font-bold text-dark mb-4">AVAILABLE PROJECTS ({filteredProjects.length})</h3>
                             <div className="space-y-3">
                                 {filteredProjects.length > 0 ? (
@@ -168,28 +178,11 @@ const Feed = ({ feedType = 'local' }) => {
 
                         <div>
                             <h3 className="font-inter text-base font-bold text-dark mb-4">ACTIVITY ({activities.length})</h3>
-                            <div className="space-y-3">
-                                {activities.length > 0 ? (
-                                    activities.map(activity => (
-                                        <div key={activity._id} className="flex items-start gap-3">
-                                            <div className="w-8 h-8 bg-highlight rounded-full flex items-center justify-center text-dark font-inter font-medium text-sm">
-                                                {activity.userInfo?.name?.charAt(0) || 'U'}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="font-inter font-semibold text-dark">{activity.projectInfo?.name}</div>
-                                                <p className="font-khula text-darker text-sm">{activity.message}</p>
-                                                <span className="font-khula text-xs text-darker">
-                                                    {new Date(activity.timestamp).toLocaleDateString()}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="text-center py-8 font-khula text-darker">
-                                        <p>No activity yet</p>
-                                    </div>
-                                )}
-                            </div>
+                            <ActivityList 
+                                activities={activities} 
+                                onDeleteActivity={handleDeleteActivity}
+                                maxVisible={5}
+                            />
                         </div>
                     </div>
                 )}

@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import InviteFriendsModal from '../components/InviteFriendsModal';
-import { projectsAPI } from '../services/api';
+import ProjectActivityList from '../components/ProjectActivityList';
+import { projectsAPI, activityAPI } from '../services/api';
 
 const ProjectPage = ({ currentUser, onLogout }) => {
     const { projectId } = useParams();
@@ -104,79 +105,92 @@ const ProjectPage = ({ currentUser, onLogout }) => {
         setShowInviteFriends(false);
     };
 
+    const handleDeleteActivity = async (activityId) => {
+        try {
+            await activityAPI.delete(activityId);
+            setProject(prev => ({
+                ...prev,
+                recentActivity: prev.recentActivity?.filter(activity => activity._id !== activityId) || []
+            }));
+        } catch (err) {
+            alert('Failed to delete activity: ' + err.message);
+        }
+    };
+
     if (loading) {
         return (
-            <div className="project-page">
+            <div className="min-h-screen bg-accent">
                 <Header currentUser={currentUser} onLogout={onLogout} />
-                <div className="loading-message">Loading project...</div>
+                <div className="flex justify-center items-center py-20">
+                    <div className="font-khula text-darker text-lg">Loading project...</div>
+                </div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="project-page">
+            <div className="min-h-screen bg-accent">
                 <Header currentUser={currentUser} onLogout={onLogout} />
-                <div className="error-message">Error loading project: {error}</div>
+                <div className="max-w-7xl mx-auto px-6 py-8">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                        <div className="font-khula text-red-800">Error loading project: {error}</div>
+                    </div>
+                </div>
             </div>
         );
     }
 
     const overviewContent = (
-        <div className="project-overview">
-            <div className="project-stats-grid">
-                <div className="stat-card">
-                    <div className="stat-icon">📁</div>
-                    <div className="stat-info">
-                        <span className="stat-number">{project.files?.length || 0}</span>
-                        <span className="stat-label">Files</span>
-                    </div>
+        <div className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-accent rounded-lg p-4 text-center">
+                    <div className="text-2xl mb-2">📁</div>
+                    <div className="font-inter text-xl font-bold text-dark">{project.files?.length || 0}</div>
+                    <div className="font-khula text-sm text-darker">Files</div>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-icon">👥</div>
-                    <div className="stat-info">
-                        <span className="stat-number">{project.members?.length || 0}</span>
-                        <span className="stat-label">Members</span>
-                    </div>
+                <div className="bg-accent rounded-lg p-4 text-center">
+                    <div className="text-2xl mb-2">👥</div>
+                    <div className="font-inter text-xl font-bold text-dark">{project.members?.length || 0}</div>
+                    <div className="font-khula text-sm text-darker">Members</div>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-icon">📄</div>
-                    <div className="stat-info">
-                        <span className="stat-number">{project.version}</span>
-                        <span className="stat-label">Version</span>
-                    </div>
+                <div className="bg-accent rounded-lg p-4 text-center">
+                    <div className="text-2xl mb-2">📄</div>
+                    <div className="font-inter text-xl font-bold text-dark">{project.version}</div>
+                    <div className="font-khula text-sm text-darker">Version</div>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-icon">⚡</div>
-                    <div className="stat-info">
-                        <span className="stat-status">{project.status}</span>
-                        <span className="stat-label">Status</span>
+                <div className="bg-accent rounded-lg p-4 text-center">
+                    <div className="text-2xl mb-2">⚡</div>
+                    <div className="font-inter text-xl font-bold text-dark">{project.status}</div>
+                    <div className="font-khula text-sm text-darker">Status</div>
+                </div>
+            </div>
+
+            <div className="bg-accent rounded-lg p-6">
+                <h3 className="font-inter text-lg font-bold text-dark mb-4">About this Project</h3>
+                <p className="font-khula text-darker mb-4">{project.description}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="font-khula">
+                        <span className="font-semibold text-dark">Language:</span>
+                        <span className="text-darker ml-2">{project.language}</span>
+                    </div>
+                    <div className="font-khula">
+                        <span className="font-semibold text-dark">Type:</span>
+                        <span className="text-darker ml-2">{project.type}</span>
+                    </div>
+                    <div className="font-khula">
+                        <span className="font-semibold text-dark">Last Updated:</span>
+                        <span className="text-darker ml-2">{new Date(project.updatedAt).toLocaleDateString()}</span>
                     </div>
                 </div>
             </div>
 
-            <div className="project-description-card">
-                <h3>About this Project</h3>
-                <p>{project.description}</p>
-                <div className="project-meta">
-                    <span className="meta-item">
-                        <strong>Language:</strong> {project.language}
-                    </span>
-                    <span className="meta-item">
-                        <strong>Type:</strong> {project.type}
-                    </span>
-                    <span className="meta-item">
-                        <strong>Last Updated:</strong> {new Date(project.updatedAt).toLocaleDateString()}
-                    </span>
-                </div>
-            </div>
-
-            <div className="project-actions-card">
-                <h3>Actions</h3>
-                <div className="action-buttons">
+            <div className="bg-accent rounded-lg p-6">
+                <h3 className="font-inter text-lg font-bold text-dark mb-4">Actions</h3>
+                <div className="space-y-4">
                     {canCheckout && (
                         <button
-                            className="btn btn-primary"
+                            className="px-6 py-3 bg-green-500 text-white rounded font-khula hover:bg-green-600 transition-colors disabled:opacity-50"
                             onClick={handleCheckout}
                             disabled={checkingOut}
                         >
@@ -185,11 +199,11 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                     )}
 
                     {canCheckin && (
-                        <div className="checkin-form">
-                            <h4>Check In Project</h4>
-                            <form onSubmit={handleCheckin}>
-                                <div className="form-group">
-                                    <label>Check-in Message</label>
+                        <div className="bg-white rounded-lg p-4 border border-fill">
+                            <h4 className="font-inter text-base font-bold text-dark mb-4">Check In Project</h4>
+                            <form onSubmit={handleCheckin} className="space-y-4">
+                                <div>
+                                    <label className="block font-khula font-medium text-dark mb-2">Check-in Message</label>
                                     <textarea
                                         value={checkinData.message}
                                         onChange={(e) => setCheckinData(prev => ({
@@ -198,11 +212,12 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                                         }))}
                                         placeholder="Describe your changes..."
                                         rows="3"
+                                        className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
                                         required
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label>Version</label>
+                                <div>
+                                    <label className="block font-khula font-medium text-dark mb-2">Version</label>
                                     <input
                                         type="text"
                                         value={checkinData.version}
@@ -211,12 +226,13 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                                             version: e.target.value
                                         }))}
                                         placeholder="1.0.1"
+                                        className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight"
                                         required
                                     />
                                 </div>
                                 <button
                                     type="submit"
-                                    className="btn btn-success"
+                                    className="px-6 py-3 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 transition-colors disabled:opacity-50"
                                     disabled={checkingIn}
                                 >
                                     {checkingIn ? 'Checking In...' : 'Check In Project'}
@@ -226,8 +242,8 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                     )}
 
                     {!isProjectMember && (
-                        <div className="not-member-message">
-                            <p>You are not a member of this project</p>
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <p className="font-khula text-yellow-800">You are not a member of this project</p>
                         </div>
                     )}
                 </div>
@@ -236,24 +252,25 @@ const ProjectPage = ({ currentUser, onLogout }) => {
     );
 
     const filesContent = (
-        <div className="project-files">
-            <div className="files-header">
-                <h3>Project Files ({project.files?.length || 0})</h3>
+        <div>
+            <div className="mb-6">
+                <h3 className="font-inter text-lg font-bold text-dark">Project Files ({project.files?.length || 0})</h3>
             </div>
-            <div className="files-list">
+            <div className="space-y-3">
                 {project.files?.length > 0 ? (
                     project.files.map((fileName, index) => (
-                        <div key={index} className="file-item">
-                            <div className="file-icon">📄</div>
-                            <div className="file-details">
-                                <span className="file-name">{fileName}</span>
-                                <span className="file-meta">File</span>
+                        <div key={index} className="flex items-center gap-3 p-4 bg-accent rounded-lg">
+                            <div className="text-2xl">📄</div>
+                            <div className="flex-1">
+                                <div className="font-khula font-medium text-dark">{fileName}</div>
+                                <div className="font-khula text-sm text-darker">File</div>
                             </div>
                         </div>
                     ))
                 ) : (
-                    <div className="empty-state">
-                        <p>No files in this project yet</p>
+                    <div className="text-center py-12 bg-accent rounded-lg">
+                        <div className="text-4xl mb-4">📁</div>
+                        <p className="font-khula text-darker">No files in this project yet</p>
                     </div>
                 )}
             </div>
@@ -261,40 +278,15 @@ const ProjectPage = ({ currentUser, onLogout }) => {
     );
 
     const messagesContent = (
-        <div className="project-messages">
-            <div className="messages-header">
-                <h3>Recent Activity ({project.recentActivity?.length || 0})</h3>
+        <div>
+            <div className="mb-6">
+                <h3 className="font-inter text-lg font-bold text-dark">Recent Activity ({project.recentActivity?.length || 0})</h3>
             </div>
-            <div className="messages-list">
-                {project.recentActivity?.length > 0 ? (
-                    project.recentActivity.map((activity) => (
-                        <div key={activity._id} className={`message-item ${activity.type}`}>
-                            <div className="message-indicator">
-                                {activity.type === 'check-in' ? '⬆️' : '⬇️'}
-                            </div>
-                            <div className="message-content">
-                                <div className="message-header">
-                                    <span className="message-user">
-                                        {activity.userInfo?.name || 'Unknown User'}
-                                    </span>
-                                    <span className="message-type">{activity.type}</span>
-                                    <span className="message-time">
-                                        {new Date(activity.timestamp).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                <p className="message-text">{activity.message}</p>
-                                {activity.version && (
-                                    <span className="message-version">Version: {activity.version}</span>
-                                )}
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="empty-state">
-                        <p>No activity yet</p>
-                    </div>
-                )}
-            </div>
+            <ProjectActivityList 
+                activities={project.recentActivity || []} 
+                onDeleteActivity={handleDeleteActivity}
+                maxVisible={5}
+            />
         </div>
     );
 
@@ -305,25 +297,29 @@ const ProjectPage = ({ currentUser, onLogout }) => {
     };
 
     return (
-        <div className="project-page">
+        <div className="min-h-screen bg-accent">
             <Header currentUser={currentUser} onLogout={onLogout} />
 
-            <main className="project-content">
-                <div className="container">
-                    <div className="project-layout">
-                        <div className="project-header-section">
-                            <div className="project-title-area">
-                                <div className="project-owner-info">
-                                    <div className="owner-avatar-large">
+            <main className="py-8">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="bg-white rounded-lg shadow-sm">
+                        <div className="p-6 border-b border-fill">
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-16 h-16 bg-highlight rounded-full flex items-center justify-center text-dark font-inter font-bold text-xl">
                                         {project.ownerInfo?.name?.charAt(0) || 'U'}
                                     </div>
-                                    <div className="title-details">
-                                        <h1 className="project-title">{project.name}</h1>
-                                        <p className="project-owner">
+                                    <div>
+                                        <h1 className="font-inter text-2xl font-bold text-dark mb-1">{project.name}</h1>
+                                        <p className="font-khula text-darker mb-2">
                                             by {project.ownerInfo?.name || 'Unknown'}
                                         </p>
-                                        <div className="project-status-badge">
-                                            <span className={`status-indicator ${project.status}`}>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`px-3 py-1 rounded-full text-sm font-khula ${
+                                                project.status === 'checked-in' 
+                                                    ? 'bg-green-100 text-green-800' 
+                                                    : 'bg-red-100 text-red-800'
+                                            }`}>
                                                 {project.status}
                                             </span>
                                         </div>
@@ -331,40 +327,52 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                                 </div>
                                 
                                 {isProjectOwner && (
-                                    <div className="project-actions">
-                                        <button
-                                            className="btn btn-secondary"
-                                            onClick={handleInviteFriends}
-                                        >
-                                            Invite Friends
-                                        </button>
-                                    </div>
+                                    <button
+                                        className="px-4 py-2 bg-highlight text-dark rounded font-khula hover:bg-yellow-400 transition-colors"
+                                        onClick={handleInviteFriends}
+                                    >
+                                        Invite Friends
+                                    </button>
                                 )}
                             </div>
                         </div>
 
-                        <div className="project-nav">
-                            <button
-                                className={`nav-tab ${activeTab === 'overview' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('overview')}
-                            >
-                                📊 Overview
-                            </button>
-                            <button
-                                className={`nav-tab ${activeTab === 'files' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('files')}
-                            >
-                                📁 Files
-                            </button>
-                            <button
-                                className={`nav-tab ${activeTab === 'messages' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('messages')}
-                            >
-                                💬 Activity
-                            </button>
+                        <div className="border-b border-fill">
+                            <div className="flex">
+                                <button
+                                    className={`px-6 py-4 font-khula font-medium transition-colors border-b-2 ${
+                                        activeTab === 'overview' 
+                                            ? 'border-highlight text-dark bg-accent' 
+                                            : 'border-transparent text-darker hover:text-dark hover:bg-accent'
+                                    }`}
+                                    onClick={() => setActiveTab('overview')}
+                                >
+                                    📊 Overview
+                                </button>
+                                <button
+                                    className={`px-6 py-4 font-khula font-medium transition-colors border-b-2 ${
+                                        activeTab === 'files' 
+                                            ? 'border-highlight text-dark bg-accent' 
+                                            : 'border-transparent text-darker hover:text-dark hover:bg-accent'
+                                    }`}
+                                    onClick={() => setActiveTab('files')}
+                                >
+                                    📁 Files
+                                </button>
+                                <button
+                                    className={`px-6 py-4 font-khula font-medium transition-colors border-b-2 ${
+                                        activeTab === 'messages' 
+                                            ? 'border-highlight text-dark bg-accent' 
+                                            : 'border-transparent text-darker hover:text-dark hover:bg-accent'
+                                    }`}
+                                    onClick={() => setActiveTab('messages')}
+                                >
+                                    💬 Activity
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="project-main-content">
+                        <div className="p-6">
                             {tabContent[activeTab]}
                         </div>
                     </div>
