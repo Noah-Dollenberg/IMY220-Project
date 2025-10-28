@@ -118,9 +118,8 @@ const LoginForm = () => {
                         type="email"
                         id="email"
                         name="email"
-                        className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${
-                            errors.email ? 'border-red-500' : 'border-fill'
-                        }`}
+                        className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${errors.email ? 'border-red-500' : 'border-fill'
+                            }`}
                         value={formData.email}
                         onChange={handleInputChange}
                         placeholder="email@example.com"
@@ -135,9 +134,8 @@ const LoginForm = () => {
                         type="password"
                         id="password"
                         name="password"
-                        className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${
-                            errors.password ? 'border-red-500' : 'border-fill'
-                        }`}
+                        className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${errors.password ? 'border-red-500' : 'border-fill'
+                            }`}
                         value={formData.password}
                         onChange={handleInputChange}
                         placeholder="************"
@@ -147,9 +145,10 @@ const LoginForm = () => {
                 </div>
 
                 <div>
-                    <label className="flex items-center font-khula text-sm text-dark">
+                    <label htmlFor="robot-check" className="flex items-center font-khula text-sm text-dark">
                         <input
                             type="checkbox"
+                            id="robot-check"
                             checked={isRobotChecked}
                             onChange={handleRobotCheck}
                             className="mr-2"

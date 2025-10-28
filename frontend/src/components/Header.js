@@ -47,21 +47,19 @@ const Header = ({ currentUser, onLogout }) => {
                     <div className="flex items-center space-x-8">
                         <Link
                             to="/home"
-                            className={`font-khula text-sm font-medium ${
-                                location.pathname === '/home' 
-                                    ? 'text-dark' 
-                                    : 'text-darker hover:text-dark'
-                            }`}
+                            className={`font-khula text-sm font-medium ${location.pathname === '/home'
+                                ? 'text-dark'
+                                : 'text-darker hover:text-dark'
+                                }`}
                         >
                             Home
                         </Link>
                         <Link
                             to={`/profile/${currentUser?._id}`}
-                            className={`font-khula text-sm font-medium relative ${
-                                location.pathname.startsWith('/profile') 
-                                    ? 'text-dark' 
-                                    : 'text-darker hover:text-dark'
-                            }`}
+                            className={`font-khula text-sm font-medium relative ${location.pathname.startsWith('/profile')
+                                ? 'text-dark'
+                                : 'text-darker hover:text-dark'
+                                }`}
                         >
                             Profile
                             {notificationCount > 0 && (
@@ -72,11 +70,10 @@ const Header = ({ currentUser, onLogout }) => {
                         </Link>
                         <Link
                             to="/search"
-                            className={`font-khula text-sm font-medium ${
-                                location.pathname === '/search' 
-                                    ? 'text-dark' 
-                                    : 'text-darker hover:text-dark'
-                            }`}
+                            className={`font-khula text-sm font-medium ${location.pathname === '/search'
+                                ? 'text-dark'
+                                : 'text-darker hover:text-dark'
+                                }`}
                         >
                             Search
                         </Link>
@@ -86,7 +83,7 @@ const Header = ({ currentUser, onLogout }) => {
                         >
                             Create Project
                         </Link>
-                        <div 
+                        <div
                             className="relative"
                             onMouseEnter={() => {
                                 if (hoverTimeout) clearTimeout(hoverTimeout);
@@ -99,13 +96,13 @@ const Header = ({ currentUser, onLogout }) => {
                         >
                             <div className="w-8 h-8 bg-fill rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
                                 {currentUser?.profilePicture ? (
-                                    <img 
-                                        src={currentUser.profilePicture} 
-                                        alt="Profile" 
+                                    <img
+                                        src={currentUser.profilePicture}
+                                        alt="Profile"
                                         className="w-8 h-8 rounded-full object-cover"
                                     />
                                 ) : (
-                                    <span className="text-dark">👤</span>
+                                    <span className="text-dark">{currentUser?.avatarEmoji || '👤'}</span>
                                 )}
                             </div>
                             {showUserMenu && (
@@ -113,7 +110,7 @@ const Header = ({ currentUser, onLogout }) => {
                                     <div className="px-4 py-2 text-sm text-dark border-b border-fill font-khula">
                                         <span className="font-bold">{currentUser?.name || 'User'}</span>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={handleLogout}
                                         className="block w-full text-left px-4 py-2 text-sm text-darker hover:bg-accent font-khula"
                                     >

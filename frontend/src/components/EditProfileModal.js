@@ -29,17 +29,17 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
                 alert('Image must be smaller than 10MB');
                 return;
             }
-            
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    
+
                     const maxSize = 150;
                     let { width, height } = img;
-                    
+
                     if (width > height) {
                         if (width > maxSize) {
                             height = (height * maxSize) / width;
@@ -51,11 +51,11 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
                             height = maxSize;
                         }
                     }
-                    
+
                     canvas.width = width;
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
-                    
+
                     const compressedDataUrl = canvas.toDataURL('image/jpeg', 1);
                     setPreviewImage(compressedDataUrl);
                     setFormData(prev => ({
@@ -136,18 +136,17 @@ const EditProfileModal = ({ user, onClose, onSave }) => {
                                 {previewImage ? (
                                     <img src={previewImage} alt="Profile Preview" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="w-full h-full bg-yellow-400 flex items-center justify-center text-white text-2xl font-bold">
+                                    <div className="w-full h-full bg-yellow-400 flex items-center justify-center text-white text-4xl font-bold">
                                         <span>
-                                            {formData.name?.charAt(0) || 'U'}
+                                            {user?.avatarEmoji || '👤'}
                                         </span>
                                     </div>
                                 )}
                             </div>
 
                             <div
-                                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                                    dragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300'
-                                }`}
+                                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300'
+                                    }`}
                                 onDragEnter={handleDrag}
                                 onDragLeave={handleDrag}
                                 onDragOver={handleDrag}

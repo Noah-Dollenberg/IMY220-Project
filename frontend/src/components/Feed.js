@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import ProjectPreview from './ProjectPreview';
 import ActivityList from './ActivityList';
-import { projectsAPI, activityAPI } from '../services/api';
+import { projectsAPI, activityAPI, friendsAPI } from '../services/api';
 
 const Feed = ({ feedType = 'local' }) => {
     const [projects, setProjects] = useState([]);
@@ -22,19 +22,25 @@ const Feed = ({ feedType = 'local' }) => {
         setError(null);
 
         try {
+            const currentUser = JSON.parse(localStorage.getItem('userData'));
+
             const [projectsResponse, activitiesResponse] = await Promise.all([
                 projectsAPI.getAll(),
                 activityAPI.getFeed(feedType)
             ]);
 
             let filteredProjects = projectsResponse.projects || [];
-            
+
             if (feedType === 'local') {
-                const currentUser = JSON.parse(localStorage.getItem('userData'));
-                // Filter to show only user's own projects and friends' projects
-                filteredProjects = filteredProjects.filter(project => 
-                    project.owner === currentUser._id || 
-                    project.members?.includes(currentUser._id)
+                // Get user's friends list
+                const friendsResponse = await friendsAPI.getFriends(currentUser._id);
+                const friendIds = friendsResponse.friends?.map(f => f._id) || [];
+
+                // Filter to show: user's own projects + projects where user is member + friends' projects
+                filteredProjects = filteredProjects.filter(project =>
+                    project.owner === currentUser._id ||
+                    project.members?.includes(currentUser._id) ||
+                    friendIds.includes(project.owner)
                 );
             }
 

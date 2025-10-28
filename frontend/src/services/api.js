@@ -141,6 +141,15 @@ export const projectsAPI = {
         return handleResponse(response);
     },
 
+    transferOwnership: async (projectId, newOwnerId) => {
+        const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/transfer-ownership`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ newOwnerId })
+        });
+        return handleResponse(response);
+    },
+
     addFiles: async (projectId, files) => {
         const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/files`, {
             method: 'POST',
@@ -304,6 +313,14 @@ export const usersAPI = {
 
     getProjects: async (id) => {
         const response = await fetch(`${API_BASE_URL}/api/users/${id}/projects`, {
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
+    },
+
+    delete: async (id) => {
+        const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+            method: 'DELETE',
             headers: getAuthHeaders()
         });
         return handleResponse(response);

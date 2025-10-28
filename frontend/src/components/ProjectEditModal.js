@@ -45,7 +45,7 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
 
     const handleRemoveMember = async (memberId) => {
         if (!isOwner || !isCheckedOutByUser) return;
-        
+
         if (window.confirm('Are you sure you want to remove this member?')) {
             try {
                 await projectsAPI.removeMember(project._id, memberId);
@@ -53,6 +53,24 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                 alert('Member removed successfully!');
             } catch (error) {
                 alert('Failed to remove member: ' + error.message);
+            }
+        }
+    };
+
+    const handleTransferOwnership = async (newOwnerId) => {
+        if (!isOwner || !isCheckedOutByUser) return;
+
+        const member = project.memberInfo?.find(m => m._id === newOwnerId);
+        const memberName = member?.name || 'this user';
+
+        if (window.confirm(`Are you sure you want to transfer ownership to ${memberName}? You will no longer be the owner of this project.`)) {
+            try {
+                await projectsAPI.transferOwnership(project._id, newOwnerId);
+                onUpdate();
+                alert('Ownership transferred successfully!');
+                onClose();
+            } catch (error) {
+                alert('Failed to transfer ownership: ' + error.message);
             }
         }
     };
@@ -158,12 +176,21 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                                             )}
                                         </div>
                                         {member._id !== project.owner?.toString() && (
-                                            <button
-                                                onClick={() => handleRemoveMember(member._id)}
-                                                className="px-3 py-1 bg-red-500 text-white rounded text-sm font-khula hover:bg-red-600"
-                                            >
-                                                Remove
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleTransferOwnership(member._id)}
+                                                    className="px-3 py-1 bg-blue-500 text-white rounded text-sm font-khula hover:bg-blue-600"
+                                                    title="Make this member the project owner"
+                                                >
+                                                    Make Owner
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRemoveMember(member._id)}
+                                                    className="px-3 py-1 bg-red-500 text-white rounded text-sm font-khula hover:bg-red-600"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 ))}

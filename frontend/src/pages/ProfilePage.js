@@ -17,6 +17,9 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showEditProfile, setShowEditProfile] = useState(false);
+    const [isFriend, setIsFriend] = useState(false);
+    const [isRestricted, setIsRestricted] = useState(false);
+    const [friendRequestSent, setFriendRequestSent] = useState(false);
 
     const isOwnProfile = currentUser?._id === userId;
 
@@ -29,15 +32,20 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
         setError(null);
 
         try {
-            const [userResponse, userProjectsResponse, friendsResponse] = await Promise.all([
-                usersAPI.getById(userId),
-                usersAPI.getProjects(userId),
-                friendsAPI.getFriends(userId)
-            ]);
-
+            const userResponse = await usersAPI.getById(userId);
             setProfileUser(userResponse.user);
-            setFriends(friendsResponse.friends || []);
-            setUserProjects(userProjectsResponse.projects || []);
+            setIsFriend(userResponse.isFriend || false);
+            setIsRestricted(userResponse.user.isRestricted || false);
+
+            if (!userResponse.user.isRestricted) {
+                const [userProjectsResponse, friendsResponse] = await Promise.all([
+                    usersAPI.getProjects(userId),
+                    friendsAPI.getFriends(userId)
+                ]);
+
+                setFriends(friendsResponse.friends || []);
+                setUserProjects(userProjectsResponse.projects || []);
+            }
 
             if (isOwnProfile) {
                 try {
@@ -47,13 +55,21 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                     console.error('Failed to load friend requests:', err);
                     setFriendRequests([]);
                 }
-                
+
                 try {
                     const projectInvitationsResponse = await projectsAPI.getInvitations().catch(() => ({ invitations: [] }));
                     setProjectInvitations(projectInvitationsResponse.invitations || []);
                 } catch (err) {
                     console.error('Failed to load project invitations:', err);
                     setProjectInvitations([]);
+                }
+            } else if (!userResponse.isFriend) {
+                try {
+                    const sentRequests = await friendsAPI.getSentRequests();
+                    const alreadySent = sentRequests.requests?.some(req => req.recipient === userId);
+                    setFriendRequestSent(alreadySent);
+                } catch (err) {
+                    console.error('Failed to check sent requests:', err);
                 }
             }
         } catch (err) {
@@ -98,14 +114,13 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
     const handleAcceptProjectInvitation = async (projectId, invitedBy) => {
         try {
             await projectsAPI.acceptInvitation(projectId, invitedBy);
-            setProjectInvitations(prev => prev.filter(inv => 
+            setProjectInvitations(prev => prev.filter(inv =>
                 !(inv.projectId.toString() === projectId && inv.invitedBy.toString() === invitedBy)
             ));
-            // Refresh notifications in header
             if (window.refreshNotifications) {
                 window.refreshNotifications();
             }
-            fetchProfileData(); // Refresh to show new project
+            fetchProfileData();
         } catch (err) {
             alert('Failed to accept project invitation: ' + err.message);
         }
@@ -114,10 +129,9 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
     const handleDeclineProjectInvitation = async (projectId, invitedBy) => {
         try {
             await projectsAPI.declineInvitation(projectId, invitedBy);
-            setProjectInvitations(prev => prev.filter(inv => 
+            setProjectInvitations(prev => prev.filter(inv =>
                 !(inv.projectId.toString() === projectId && inv.invitedBy.toString() === invitedBy)
             ));
-            // Refresh notifications in header
             if (window.refreshNotifications) {
                 window.refreshNotifications();
             }
@@ -146,6 +160,30 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
             } catch (err) {
                 alert('Failed to remove friend: ' + err.message);
             }
+        }
+    };
+
+    const handleDeleteUser = async () => {
+        if (!window.confirm(`Are you sure you want to delete ${profileUser?.name}'s account? This action cannot be undone and will delete all their projects and data.`)) {
+            return;
+        }
+
+        try {
+            await usersAPI.delete(userId);
+            alert('User account deleted successfully');
+            navigate('/search');
+        } catch (err) {
+            alert('Failed to delete user: ' + err.message);
+        }
+    };
+
+    const handleSendFriendRequest = async () => {
+        try {
+            await friendsAPI.sendRequest(userId);
+            setFriendRequestSent(true);
+            alert('Friend request sent!');
+        } catch (err) {
+            alert('Failed to send friend request: ' + err.message);
         }
     };
 
@@ -183,9 +221,9 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="w-20 h-20 bg-highlight rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                                         {profileUser?.profilePicture ? (
-                                            <img 
-                                                src={profileUser.profilePicture} 
-                                                alt="Profile" 
+                                            <img
+                                                src={profileUser.profilePicture}
+                                                alt="Profile"
                                                 className="w-full h-full object-cover"
                                                 onError={(e) => {
                                                     e.target.style.display = 'none';
@@ -193,65 +231,125 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                 }}
                                             />
                                         ) : null}
-                                        <span className={`text-dark text-2xl ${profileUser?.profilePicture ? 'hidden' : ''}`}>👤</span>
+                                        <span className={`text-dark text-2xl ${profileUser?.profilePicture ? 'hidden' : ''}`}>{profileUser?.avatarEmoji || '👤'}</span>
                                     </div>
                                     <div className="flex-1">
-                                        <h1 className="font-inter text-xl font-bold text-dark mb-2">{profileUser?.name || 'Unknown User'}</h1>
-                                        {isOwnProfile && (
-                                            <button
-                                                className="bg-fill text-dark px-3 py-1 rounded font-khula text-sm hover:bg-accent transition-colors"
-                                                onClick={() => setShowEditProfile(true)}
-                                            >
-                                                Edit Profile
-                                            </button>
-                                        )}
+                                        <h1 className="font-inter text-xl font-bold text-dark mb-2">
+                                            {profileUser?.name || 'Unknown User'}
+                                            {profileUser?.isAdmin && (
+                                                <span className="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded font-khula">ADMIN</span>
+                                            )}
+                                        </h1>
+                                        <div className="flex gap-2">
+                                            {isOwnProfile && (
+                                                <button
+                                                    className="bg-fill text-dark px-3 py-1 rounded font-khula text-sm hover:bg-accent transition-colors"
+                                                    onClick={() => setShowEditProfile(true)}
+                                                >
+                                                    Edit Profile
+                                                </button>
+                                            )}
+                                            {!isOwnProfile && currentUser?.isAdmin && (
+                                                <>
+                                                    <button
+                                                        className="bg-blue-500 text-white px-3 py-1 rounded font-khula text-sm hover:bg-blue-600 transition-colors"
+                                                        onClick={() => setShowEditProfile(true)}
+                                                    >
+                                                        Admin: Edit User
+                                                    </button>
+                                                    <button
+                                                        className="bg-red-500 text-white px-3 py-1 rounded font-khula text-sm hover:bg-red-600 transition-colors"
+                                                        onClick={handleDeleteUser}
+                                                    >
+                                                        Admin: Delete User
+                                                    </button>
+                                                </>
+                                            )}
+                                            {!isOwnProfile && !currentUser?.isAdmin && !isFriend && !isRestricted && (
+                                                <button
+                                                    className={`px-3 py-1 rounded font-khula text-sm transition-colors ${friendRequestSent
+                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                        : 'bg-highlight text-dark hover:bg-yellow-400'
+                                                    }`}
+                                                    onClick={handleSendFriendRequest}
+                                                    disabled={friendRequestSent}
+                                                >
+                                                    {friendRequestSent ? 'Request Sent' : 'Add Friend'}
+                                                </button>
+                                            )}
+                                            {!isOwnProfile && !currentUser?.isAdmin && isRestricted && (
+                                                <button
+                                                    className={`px-3 py-1 rounded font-khula text-sm transition-colors ${friendRequestSent
+                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                        : 'bg-highlight text-dark hover:bg-yellow-400'
+                                                    }`}
+                                                    onClick={handleSendFriendRequest}
+                                                    disabled={friendRequestSent}
+                                                >
+                                                    {friendRequestSent ? 'Request Sent' : 'Add Friend'}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-3 mb-6">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-lg">📧</span>
-                                        <span className="font-khula text-dark text-sm">{profileUser?.email}</span>
-                                    </div>
-                                    {profileUser?.birthDate && (
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-lg">🎂</span>
-                                            <span className="font-khula text-dark text-sm">{profileUser.birthDate}</span>
+                                {!isRestricted && (
+                                    <>
+                                        <div className="space-y-3 mb-6">
+                                            {profileUser?.email && (
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-lg">📧</span>
+                                                    <span className="font-khula text-dark text-sm">{profileUser.email}</span>
+                                                </div>
+                                            )}
+                                            {profileUser?.birthDate && (
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-lg">🎂</span>
+                                                    <span className="font-khula text-dark text-sm">{profileUser.birthDate}</span>
+                                                </div>
+                                            )}
+                                            {profileUser?.company && (
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-lg">🏢</span>
+                                                    <span className="font-khula text-dark text-sm">{profileUser.company}</span>
+                                                </div>
+                                            )}
+                                            {profileUser?.country && (
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-lg">🌍</span>
+                                                    <span className="font-khula text-dark text-sm">{profileUser.country}</span>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                    {profileUser?.company && (
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-lg">🏢</span>
-                                            <span className="font-khula text-dark text-sm">{profileUser.company}</span>
-                                        </div>
-                                    )}
-                                    {profileUser?.country && (
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-lg">🌍</span>
-                                            <span className="font-khula text-dark text-sm">{profileUser.country}</span>
-                                        </div>
-                                    )}
-                                </div>
 
-                                <div className="flex justify-around pt-6 border-t border-fill">
-                                    <div className="text-center">
-                                        <div className="font-inter text-xl font-bold text-dark">{userProjects.length}</div>
-                                        <div className="font-khula text-xs text-darker">Projects</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="font-inter text-xl font-bold text-dark">{friends.length}</div>
-                                        <div className="font-khula text-xs text-darker">Friends</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="font-inter text-xl font-bold text-dark">
-                                            {new Date(profileUser?.createdAt).getFullYear()}
+                                        <div className="flex justify-around pt-6 border-t border-fill">
+                                            <div className="text-center">
+                                                <div className="font-inter text-xl font-bold text-dark">{userProjects.length}</div>
+                                                <div className="font-khula text-xs text-darker">Projects</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="font-inter text-xl font-bold text-dark">{friends.length}</div>
+                                                <div className="font-khula text-xs text-darker">Friends</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="font-inter text-xl font-bold text-dark">
+                                                    {new Date(profileUser?.createdAt).getFullYear()}
+                                                </div>
+                                                <div className="font-khula text-xs text-darker">Joined</div>
+                                            </div>
                                         </div>
-                                        <div className="font-khula text-xs text-darker">Joined</div>
+                                    </>
+                                )}
+
+                                {isRestricted && (
+                                    <div className="text-center py-8 border-t border-fill mt-6">
+                                        <p className="font-khula text-darker text-sm">🔒 This profile is private</p>
+                                        <p className="font-khula text-darker text-xs mt-2">Add as friend to view full profile</p>
                                     </div>
-                                </div>
+                                )}
                             </div>
 
-                            {isOwnProfile && (
+                            {!isRestricted && isOwnProfile && (
                                 <>
                                     <div className="bg-white rounded p-6">
                                         <h3 className="font-inter text-lg font-semibold text-dark mb-4">Friend Requests ({friendRequests.length})</h3>
@@ -261,9 +359,9 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                     <div key={request._id} className="flex items-center gap-3 p-3 bg-accent rounded border border-fill">
                                                         <div className="w-10 h-10 bg-highlight rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                                                             {request.requesterInfo?.profilePicture ? (
-                                                                <img 
-                                                                    src={request.requesterInfo.profilePicture} 
-                                                                    alt="Profile" 
+                                                                <img
+                                                                    src={request.requesterInfo.profilePicture}
+                                                                    alt="Profile"
                                                                     className="w-full h-full object-cover"
                                                                     onError={(e) => {
                                                                         e.target.style.display = 'none';
@@ -288,7 +386,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                             >
                                                                 Accept
                                                             </button>
-                                                            <button 
+                                                            <button
                                                                 className="bg-fill text-dark px-3 py-1 rounded font-khula text-xs hover:bg-accent transition-colors"
                                                                 onClick={() => handleDeclineFriend(request._id)}
                                                             >
@@ -329,7 +427,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                             >
                                                                 Accept
                                                             </button>
-                                                            <button 
+                                                            <button
                                                                 className="bg-fill text-dark px-3 py-1 rounded font-khula text-xs hover:bg-accent transition-colors"
                                                                 onClick={() => handleDeclineProjectInvitation(invitation.projectId, invitation.invitedBy)}
                                                             >
@@ -348,17 +446,18 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                 </>
                             )}
 
-                            <div className="bg-white rounded p-6">
-                                <h3 className="font-inter text-lg font-semibold text-dark mb-4">Friends</h3>
+                            {!isRestricted && (
+                                <div className="bg-white rounded p-6">
+                                    <h3 className="font-inter text-lg font-semibold text-dark mb-4">Friends</h3>
                                 <div className="space-y-3 max-h-80 overflow-y-auto">
                                     {friends.length > 0 ? (
                                         friends.map(friend => (
                                             <div key={friend._id} className="flex items-center gap-3 p-3 hover:bg-accent rounded border border-transparent hover:border-fill transition-all">
                                                 <div className="w-10 h-10 bg-highlight rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                                                     {friend.profilePicture ? (
-                                                        <img 
-                                                            src={friend.profilePicture} 
-                                                            alt="Profile" 
+                                                        <img
+                                                            src={friend.profilePicture}
+                                                            alt="Profile"
                                                             className="w-full h-full object-cover"
                                                             onError={(e) => {
                                                                 e.target.style.display = 'none';
@@ -366,7 +465,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                             }}
                                                         />
                                                     ) : null}
-                                                    <span className={`text-dark ${friend.profilePicture ? 'hidden' : ''}`}>👤</span>
+                                                    <span className={`text-dark ${friend.profilePicture ? 'hidden' : ''}`}>{friend.avatarEmoji || '👤'}</span>
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="font-inter font-medium text-dark text-sm">{friend.name}</div>
@@ -374,7 +473,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                 </div>
                                                 {friend._id !== currentUser._id && (
                                                     <div className="flex gap-1">
-                                                        <button 
+                                                        <button
                                                             className="bg-fill text-dark px-2 py-1 rounded font-khula text-xs hover:bg-accent transition-colors leading-tight"
                                                             onClick={() => navigate(`/profile/${friend._id}`)}
                                                         >
@@ -382,7 +481,7 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                             <div>Profile</div>
                                                         </button>
                                                         {isOwnProfile && (
-                                                            <button 
+                                                            <button
                                                                 className="bg-red-500 text-white px-2 py-1 rounded font-khula text-xs hover:bg-red-600 transition-colors"
                                                                 onClick={() => handleRemoveFriend(friend._id)}
                                                             >
@@ -399,10 +498,12 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                         </div>
                                     )}
                                 </div>
-                            </div>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="lg:col-span-2">
+                        {!isRestricted && (
+                            <div className="lg:col-span-2">
                             <div className="bg-white rounded p-6">
                                 <div className="mb-6">
                                     <h2 className="font-inter text-2xl font-bold text-dark mb-1">Projects</h2>
@@ -461,7 +562,8 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                     )}
                                 </div>
                             </div>
-                        </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>

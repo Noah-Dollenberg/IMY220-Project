@@ -1,6 +1,6 @@
 // NJ (Noah) Dollenberg u24596142 41
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import InviteFriendsModal from '../components/InviteFriendsModal';
 import ProjectActivityList from '../components/ProjectActivityList';
@@ -9,6 +9,7 @@ import { projectsAPI, activityAPI } from '../services/api';
 
 const ProjectPage = ({ currentUser, onLogout }) => {
     const { projectId } = useParams();
+    const navigate = useNavigate();
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -25,6 +26,10 @@ const ProjectPage = ({ currentUser, onLogout }) => {
     const [deleting, setDeleting] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [dragOver, setDragOver] = useState(false);
+    const [discussionMessage, setDiscussionMessage] = useState('');
+    const [postingMessage, setPostingMessage] = useState(false);
+    const [previewFile, setPreviewFile] = useState(null);
+    const [showPreview, setShowPreview] = useState(false);
 
     useEffect(() => {
         fetchProject();
@@ -90,6 +95,7 @@ const ProjectPage = ({ currentUser, onLogout }) => {
     );
 
     const isProjectOwner = project?.owner?.toString() === currentUser?._id;
+    const isAdmin = currentUser?.isAdmin;
 
     const canCheckout = isProjectMember && project?.status === 'checked-in';
     const canCheckin = isProjectMember &&
@@ -148,6 +154,25 @@ const ProjectPage = ({ currentUser, onLogout }) => {
         }
     };
 
+    const handlePostMessage = async (e) => {
+        e.preventDefault();
+
+        if (!discussionMessage.trim()) {
+            return;
+        }
+
+        setPostingMessage(true);
+        try {
+            await projectsAPI.addActivity(projectId, discussionMessage);
+            setDiscussionMessage('');
+            await fetchProject(); // Refresh to show new message
+        } catch (err) {
+            alert('Failed to post message: ' + err.message);
+        } finally {
+            setPostingMessage(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-accent">
@@ -199,7 +224,41 @@ const ProjectPage = ({ currentUser, onLogout }) => {
 
             <div className="bg-accent rounded-lg p-6">
                 <h3 className="font-inter text-lg font-bold text-dark mb-4">About this Project</h3>
+
+                {/* Project Image */}
+                {project.image && (
+                    <div className="mb-4">
+                        <img
+                            src={project.image}
+                            alt={project.name}
+                            className="w-full max-w-md h-auto rounded-lg border border-fill shadow-sm"
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                            }}
+                        />
+                    </div>
+                )}
+
                 <p className="font-khula text-darker mb-4">{project.description}</p>
+
+                {project.hashtags && project.hashtags.length > 0 && (
+                    <div className="mb-4">
+                        <div className="flex flex-wrap gap-2">
+                            {project.hashtags.map((tag, index) => (
+                                <span
+                                    key={index}
+                                    className="px-3 py-1 bg-highlight rounded-full text-sm font-khula text-dark hover:bg-yellow-400 transition-colors cursor-pointer"
+                                    onClick={() => {
+                                        navigate(`/search?tab=projects&q=${encodeURIComponent(tag)}`);
+                                    }}
+                                >
+                                    #{tag}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div className="font-khula">
                         <span className="font-semibold text-dark">Language:</span>
@@ -280,7 +339,7 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                     </div>
                 )}
 
-                {isProjectOwner && project?.status === 'checked-in' && (
+                {(isProjectOwner && project?.status === 'checked-in') && (
                     <div>
                         <button
                             className="px-6 py-3 bg-red-500 text-white rounded font-khula hover:bg-red-600 transition-colors disabled:opacity-50"
@@ -288,6 +347,20 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                             disabled={deleting}
                         >
                             {deleting ? 'Deleting...' : 'Delete Project'}
+                        </button>
+                    </div>
+                )}
+
+                {isAdmin && !isProjectOwner && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <h4 className="font-inter text-base font-bold text-dark mb-2">Admin Controls</h4>
+                        <p className="font-khula text-sm text-darker mb-3">As an admin, you can delete this project at any time.</p>
+                        <button
+                            className="px-6 py-3 bg-red-500 text-white rounded font-khula hover:bg-red-600 transition-colors disabled:opacity-50"
+                            onClick={handleDeleteProject}
+                            disabled={deleting}
+                        >
+                            {deleting ? 'Deleting...' : 'Admin: Delete Project'}
                         </button>
                     </div>
                 )}
@@ -335,6 +408,42 @@ const ProjectPage = ({ currentUser, onLogout }) => {
         } catch (err) {
             alert('Failed to download file: ' + err.message);
         }
+    };
+
+    const handleViewFile = async (file) => {
+        try {
+            const token = localStorage.getItem('userToken');
+            const response = await fetch(`/api/projects/${projectId}/files/${file.filename}`, {
+                headers: {
+                    ...(token && { 'Authorization': `Bearer ${token}` })
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load file');
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+
+            setPreviewFile({
+                name: file.originalName || file.filename,
+                url: url,
+                type: blob.type,
+                size: file.size
+            });
+            setShowPreview(true);
+        } catch (err) {
+            alert('Failed to view file: ' + err.message);
+        }
+    };
+
+    const handleClosePreview = () => {
+        if (previewFile?.url) {
+            URL.revokeObjectURL(previewFile.url);
+        }
+        setPreviewFile(null);
+        setShowPreview(false);
     };
 
     const handleRemoveFile = async (file) => {
@@ -413,6 +522,13 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                                 </div>
                                 <div className="flex gap-2">
                                     <button
+                                        onClick={() => handleViewFile(file)}
+                                        className="px-3 py-1 bg-blue-500 text-white rounded text-sm font-khula hover:bg-blue-600 transition-colors"
+                                        title="View file contents"
+                                    >
+                                        View
+                                    </button>
+                                    <button
                                         onClick={() => handleDownloadFile(file)}
                                         className="px-3 py-1 bg-green-500 text-white rounded text-sm font-khula hover:bg-green-600 transition-colors"
                                     >
@@ -445,12 +561,38 @@ const ProjectPage = ({ currentUser, onLogout }) => {
     const messagesContent = (
         <div>
             <div className="mb-6">
-                <h3 className="font-inter text-lg font-bold text-dark">Recent Activity ({project.recentActivity?.length || 0})</h3>
+                <h3 className="font-inter text-lg font-bold text-dark mb-4">Project Discussion</h3>
+
+                {/* Post Message Form - Members Only */}
+                {isProjectMember && (
+                    <form onSubmit={handlePostMessage} className="mb-6 bg-accent rounded-lg p-4">
+                        <label className="block font-khula font-medium text-dark mb-2">Add a message</label>
+                        <textarea
+                            value={discussionMessage}
+                            onChange={(e) => setDiscussionMessage(e.target.value)}
+                            placeholder="Share updates, ask questions, or discuss the project..."
+                            rows="3"
+                            className="w-full px-3 py-2 border border-fill rounded font-khula focus:outline-none focus:border-highlight mb-3"
+                            disabled={postingMessage}
+                        />
+                        <div className="flex justify-end">
+                            <button
+                                type="submit"
+                                disabled={postingMessage || !discussionMessage.trim()}
+                                className="px-4 py-2 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {postingMessage ? 'Posting...' : 'Post Message'}
+                            </button>
+                        </div>
+                    </form>
+                )}
+
+                <h4 className="font-inter text-base font-semibold text-dark mb-3">Recent Activity ({project.recentActivity?.length || 0})</h4>
             </div>
-            <ProjectActivityList 
-                activities={project.recentActivity || []} 
+            <ProjectActivityList
+                activities={project.recentActivity || []}
                 onDeleteActivity={handleDeleteActivity}
-                maxVisible={5}
+                maxVisible={10}
             />
         </div>
     );
@@ -513,13 +655,13 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                                             Invite Friends
                                         </button>
                                     )}
-                                    {isProjectOwner && project?.status === 'checked-out' && 
-                                     project?.checkedOutBy?.toString() === currentUser?._id && (
+                                    {((isProjectOwner && project?.status === 'checked-out' &&
+                                       project?.checkedOutBy?.toString() === currentUser?._id) || isAdmin) && (
                                         <button
                                             className="px-4 py-2 bg-blue-500 text-white rounded font-khula hover:bg-blue-600 transition-colors"
                                             onClick={handleEditProject}
                                         >
-                                            Edit Project
+                                            {isAdmin && !isProjectOwner ? 'Admin: Edit Project' : 'Edit Project'}
                                         </button>
                                     )}
                                 </div>
@@ -583,6 +725,98 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                     onClose={handleCloseEditModal}
                     onUpdate={handleProjectUpdate}
                 />
+            )}
+
+            {/* File Preview Modal */}
+            {showPreview && previewFile && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={handleClosePreview}>
+                    <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                        {/* Header */}
+                        <div className="flex justify-between items-center p-4 border-b border-fill">
+                            <div>
+                                <h3 className="font-inter text-lg font-bold text-dark">{previewFile.name}</h3>
+                                <p className="font-khula text-sm text-darker">
+                                    {previewFile.size ? `${(previewFile.size / 1024).toFixed(1)} KB` : ''} • {previewFile.type || 'Unknown type'}
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleClosePreview}
+                                className="text-darker hover:text-dark text-2xl"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 overflow-auto p-4">
+                            {previewFile.type?.startsWith('image/') ? (
+                                <img
+                                    src={previewFile.url}
+                                    alt={previewFile.name}
+                                    className="max-w-full h-auto mx-auto"
+                                />
+                            ) : previewFile.type?.startsWith('text/') ||
+                               previewFile.type === 'application/json' ||
+                               previewFile.name?.match(/\.(txt|md|js|jsx|ts|tsx|css|html|json|xml|csv)$/i) ? (
+                                <iframe
+                                    src={previewFile.url}
+                                    className="w-full h-full min-h-[500px] border border-fill rounded"
+                                    title={previewFile.name}
+                                />
+                            ) : previewFile.type === 'application/pdf' ? (
+                                <iframe
+                                    src={previewFile.url}
+                                    className="w-full h-full min-h-[600px] border border-fill rounded"
+                                    title={previewFile.name}
+                                />
+                            ) : previewFile.type?.startsWith('video/') ? (
+                                <video
+                                    src={previewFile.url}
+                                    controls
+                                    className="max-w-full h-auto mx-auto"
+                                >
+                                    Your browser does not support video playback.
+                                </video>
+                            ) : previewFile.type?.startsWith('audio/') ? (
+                                <div className="flex items-center justify-center h-64">
+                                    <audio
+                                        src={previewFile.url}
+                                        controls
+                                        className="w-full max-w-md"
+                                    >
+                                        Your browser does not support audio playback.
+                                    </audio>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center h-64 text-center">
+                                    <div className="text-6xl mb-4">📄</div>
+                                    <p className="font-khula text-darker mb-4">
+                                        Preview not available for this file type.
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            handleClosePreview();
+                                            handleDownloadFile({ filename: previewFile.name, originalName: previewFile.name });
+                                        }}
+                                        className="px-4 py-2 bg-green-500 text-white rounded font-khula hover:bg-green-600"
+                                    >
+                                        Download to View
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex justify-end gap-2 p-4 border-t border-fill">
+                            <button
+                                onClick={handleClosePreview}
+                                className="px-4 py-2 border border-fill rounded font-khula text-dark hover:bg-accent transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

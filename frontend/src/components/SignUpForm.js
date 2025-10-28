@@ -228,9 +228,10 @@ const SignUpForm = () => {
                 </div>
 
                 <div>
-                    <label className="flex items-center font-khula text-sm text-dark">
+                    <label htmlFor="robot-check" className="flex items-center font-khula text-sm text-dark">
                         <input
                             type="checkbox"
+                            id="robot-check"
                             checked={isRobotChecked}
                             onChange={handleRobotCheck}
                             className="mr-2"

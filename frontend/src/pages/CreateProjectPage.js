@@ -16,6 +16,8 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
     });
 
     const [uploadedFiles, setUploadedFiles] = useState([]);
+    const [projectImage, setProjectImage] = useState(null);
+    const [projectImagePreview, setProjectImagePreview] = useState(null);
     const [dragActive, setDragActive] = useState(false);
     const [errors, setErrors] = useState({});
     const [showInviteFriends, setShowInviteFriends] = useState(false);
@@ -108,6 +110,59 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
         }
     };
 
+    const generateHashtagsFromFiles = (files) => {
+        const extensions = files.map(file => {
+            const ext = file.name.split('.').pop().toLowerCase();
+            return ext;
+        });
+
+        const hashtags = new Set();
+
+        // Add language-based hashtags
+        if (formData.language) {
+            hashtags.add(formData.language);
+        }
+
+        // Map file extensions to technology hashtags
+        const extensionMap = {
+            'js': 'JavaScript',
+            'jsx': 'React',
+            'ts': 'TypeScript',
+            'tsx': 'React',
+            'py': 'Python',
+            'java': 'Java',
+            'cpp': 'C++',
+            'c': 'C',
+            'cs': 'CSharp',
+            'php': 'PHP',
+            'rb': 'Ruby',
+            'go': 'Go',
+            'rs': 'Rust',
+            'swift': 'Swift',
+            'kt': 'Kotlin',
+            'html': 'HTML',
+            'css': 'CSS',
+            'scss': 'SCSS',
+            'json': 'JSON',
+            'xml': 'XML',
+            'sql': 'SQL',
+            'md': 'Documentation',
+            'sh': 'Shell',
+            'yml': 'DevOps',
+            'yaml': 'DevOps',
+            'dockerfile': 'Docker',
+            'vue': 'Vue'
+        };
+
+        extensions.forEach(ext => {
+            if (extensionMap[ext]) {
+                hashtags.add(extensionMap[ext]);
+            }
+        });
+
+        return Array.from(hashtags);
+    };
+
     const handleFiles = (files) => {
         const fileArray = Array.from(files).map(file => ({
             id: Date.now() + Math.random(),
@@ -117,6 +172,37 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
             file: file
         }));
         setUploadedFiles(prev => [...prev, ...fileArray]);
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Check if it's an image
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size should be less than 5MB');
+                return;
+            }
+
+            setProjectImage(file);
+
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProjectImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeProjectImage = () => {
+        setProjectImage(null);
+        setProjectImagePreview(null);
     };
 
 
@@ -149,30 +235,44 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
         }
 
         try {
+            // Generate hashtags from uploaded files
+            const fileObjects = uploadedFiles.map(f => f.file);
+            const generatedHashtags = generateHashtagsFromFiles(fileObjects);
+
+            // Convert project image to base64 if present
+            let imageBase64 = null;
+            if (projectImage) {
+                const reader = new FileReader();
+                imageBase64 = await new Promise((resolve) => {
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(projectImage);
+                });
+            }
+
             const projectData = {
                 name: formData.name,
                 description: formData.description,
                 language: formData.language,
                 version: formData.version,
                 isPublic: formData.isPublic,
-
+                image: imageBase64,
+                hashtags: generatedHashtags,
                 files: []
             };
 
             const response = await projectsAPI.create(projectData);
             setCreatedProjectId(response.projectId);
-            
+
             // Upload files if any
             if (uploadedFiles.length > 0) {
-                const fileObjects = uploadedFiles.map(f => f.file);
                 await projectsAPI.uploadFiles(response.projectId, fileObjects);
             }
-            
+
             // Send invitations to selected friends
             if (selectedFriends.length > 0) {
                 try {
                     await Promise.all(
-                        selectedFriends.map(friendId => 
+                        selectedFriends.map(friendId =>
                             projectsAPI.sendInvitation(response.projectId, friendId)
                         )
                     );
@@ -184,7 +284,7 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
             } else {
                 alert('Project created successfully!');
             }
-            
+
             navigate('/home');
         } catch (error) {
             alert('Failed to create project: ' + error.message);
@@ -204,6 +304,50 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
 
                         <form onSubmit={handleSubmit} className="space-y-8">
 
+                            {/* Project Image Upload */}
+                            <div>
+                                <h3 className="font-inter text-lg font-semibold text-dark mb-4">Project Image (Optional)</h3>
+                                <div className="flex items-start gap-4">
+                                    {projectImagePreview ? (
+                                        <div className="relative">
+                                            <img
+                                                src={projectImagePreview}
+                                                alt="Project preview"
+                                                className="w-32 h-32 object-cover rounded border border-fill"
+                                            />
+                                            <button
+                                                type="button"
+                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+                                                onClick={removeProjectImage}
+                                                title="Remove image"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="w-32 h-32 border-2 border-dashed border-fill rounded flex items-center justify-center bg-accent">
+                                            <span className="text-4xl">🖼️</span>
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <p className="font-khula text-darker mb-3">Upload an image to represent your project</p>
+                                        <input
+                                            type="file"
+                                            id="image-input"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            className="hidden"
+                                        />
+                                        <label
+                                            htmlFor="image-input"
+                                            className="inline-block bg-fill text-dark px-4 py-2 rounded font-khula hover:bg-accent transition-colors cursor-pointer"
+                                        >
+                                            {projectImagePreview ? 'Change Image' : 'Choose Image'}
+                                        </label>
+                                        <p className="font-khula text-xs text-darker mt-2">Max size: 5MB. Supported formats: JPG, PNG, GIF</p>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div>
                                 <h3 className="font-inter text-lg font-semibold text-dark mb-4">Project Files</h3>

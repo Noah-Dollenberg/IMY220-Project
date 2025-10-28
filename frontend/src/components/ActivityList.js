@@ -23,15 +23,11 @@ const ActivityList = ({ activities, onDeleteActivity, maxVisible = 5 }) => {
         setActivityToDelete(null);
     };
 
-    const containerStyle = {
-        maxHeight: activities.length > maxVisible ? '300px' : 'auto',
-        overflowY: activities.length > maxVisible ? 'auto' : 'visible',
-        paddingRight: activities.length > maxVisible ? '12px' : '0'
-    };
+    const shouldScroll = activities.length > maxVisible;
 
     return (
         <>
-            <div style={containerStyle} className="space-y-3">
+            <div className={`space-y-3 ${shouldScroll ? 'max-h-[300px] overflow-y-auto pr-3' : ''}`}>
                 {activities.length > 0 ? (
                     activities.map(activity => (
                         <div key={activity._id} className="flex items-start gap-3 group">

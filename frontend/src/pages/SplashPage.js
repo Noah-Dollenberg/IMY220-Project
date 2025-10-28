@@ -78,7 +78,7 @@ const SplashPage = () => {
       {backgroundIcons.map((icon) => (
         <div
           key={icon.id}
-          className="absolute pointer-events-none z-0"
+          className="absolute pointer-events-none z-0 transition-transform duration-300 ease-out"
           style={{
             left: `${icon.x}%`,
             top: `${icon.y}%`,
@@ -90,8 +90,7 @@ const SplashPage = () => {
               )
               scale(${icon.scale})
               rotate(${icon.rotation}deg)
-            `,
-            transition: 'transform 0.3s ease-out'
+            `
           }}
         >
           <div className="w-32 h-32 text-6xl text-gray-600 opacity-80 font-mono blur-sm">&lt;/&gt;</div>

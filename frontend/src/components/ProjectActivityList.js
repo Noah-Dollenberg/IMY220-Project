@@ -23,31 +23,29 @@ const ProjectActivityList = ({ activities, onDeleteActivity, maxVisible = 5 }) =
         setActivityToDelete(null);
     };
 
-    const containerStyle = {
-        maxHeight: activities.length > maxVisible ? '300px' : 'auto',
-        overflowY: activities.length > maxVisible ? 'auto' : 'visible',
-        paddingRight: activities.length > maxVisible ? '12px' : '0'
-    };
+    const shouldScroll = activities.length > maxVisible;
 
     return (
         <>
-            <div style={containerStyle} className="space-y-3">
+            <div className={`space-y-3 ${shouldScroll ? 'max-h-[300px] overflow-y-auto pr-3' : ''}`}>
                 {activities.length > 0 ? (
                     activities.map((activity) => (
                         <div key={activity._id} className="flex items-start gap-3 p-4 bg-accent rounded-lg group">
                             <div className="text-xl">
-                                {activity.type === 'check-in' ? '⬆️' : '⬇️'}
+                                {activity.type === 'check-in' ? '⬆️' : activity.type === 'check-out' ? '⬇️' : '💬'}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
                                     <span className="font-inter font-semibold text-dark">
                                         {activity.userInfo?.name || 'Unknown User'}
                                     </span>
-                                    <span className="px-2 py-1 bg-highlight rounded text-xs font-khula text-dark">
+                                    <span className={`px-2 py-1 rounded text-xs font-khula text-dark ${
+                                        activity.type === 'discussion' ? 'bg-blue-200' : 'bg-highlight'
+                                    }`}>
                                         {activity.type}
                                     </span>
                                     <span className="font-khula text-xs text-darker">
-                                        {new Date(activity.timestamp).toLocaleDateString()}
+                                        {new Date(activity.timestamp).toLocaleDateString()} {new Date(activity.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                     </span>
                                 </div>
                                 <p className="font-khula text-darker text-sm mb-1">{activity.message}</p>
