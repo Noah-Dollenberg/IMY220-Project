@@ -414,10 +414,10 @@ const ProfilePage = ({ currentUser, onLogout, onUpdateUser }) => {
                                                         </div>
                                                         <div className="flex-1">
                                                             <div className="font-inter font-medium text-dark text-sm">
-                                                                {invitation.project?.name || invitation.projectInfo?.name || 'Unknown Project'}
+                                                                {invitation.projectName || invitation.project?.name || invitation.projectInfo?.name || 'Unknown Project'}
                                                             </div>
                                                             <div className="font-khula text-xs text-darker">
-                                                                Invited by {invitation.inviter?.name || invitation.inviterInfo?.name || 'Unknown'}
+                                                                Invited by {invitation.invitedByName || invitation.inviter?.name || invitation.inviterInfo?.name || 'Unknown'}
                                                             </div>
                                                         </div>
                                                         <div className="flex gap-2">

@@ -1098,6 +1098,35 @@ app.get('/api/friends/requests', checkUser, async (req, res) => {
     }
 });
 
+app.get('/api/friends/sent', checkUser, async (req, res) => {
+    try {
+        const userRequests = req.user.friendRequests || { sent: [], received: [] };
+        const sentIds = userRequests.sent || [];
+
+        const recipients = await db.collection('users')
+            .find({ _id: { $in: sentIds } })
+            .toArray();
+
+        const requests = recipients.map(recipient => {
+            const { password: _, ...recipientInfo } = recipient;
+            return {
+                recipient: recipient._id.toString()
+            };
+        });
+
+        res.json({
+            success: true,
+            requests
+        });
+    } catch (error) {
+        console.error('Get sent requests error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching sent requests'
+        });
+    }
+});
+
 app.delete('/api/friends/:friendId', checkUser, async (req, res) => {
     try {
         const { friendId } = req.params;
@@ -1219,37 +1248,66 @@ app.get('/api/search/projects', checkUser, async (req, res) => {
         const { q, type, hashtag } = req.query;
 
         let searchQuery = {
-            $or: [
-                { isPublic: true },
-                { members: req.user._id }
+            $and: [
+                {
+                    $or: [
+                        { isPublic: true },
+                        { members: req.user._id }
+                    ]
+                }
             ]
         };
 
         if (q && q.length >= 2) {
             const searchRegex = new RegExp(q, 'i');
-            searchQuery.$and = [
-                searchQuery,
-                {
-                    $or: [
-                        { name: searchRegex },
-                        { description: searchRegex }
-                    ]
-                }
-            ];
+            searchQuery.$and.push({
+                $or: [
+                    { name: searchRegex },
+                    { description: searchRegex }
+                ]
+            });
         }
 
         if (type) {
-            searchQuery.type = type;
+            searchQuery.$and.push({ type: type });
         }
 
         if (hashtag) {
-            searchQuery.hashtags = hashtag;
+            searchQuery.$and.push({ hashtags: hashtag });
         }
 
-        const projects = await db.collection('projects')
+        let projects = await db.collection('projects')
             .find(searchQuery)
-            .limit(20)
             .toArray();
+
+        if (q && q.length >= 2) {
+            const searchLower = q.toLowerCase();
+            projects.sort((a, b) => {
+                const aName = (a.name || '').toLowerCase();
+                const bName = (b.name || '').toLowerCase();
+                const aDesc = (a.description || '').toLowerCase();
+                const bDesc = (b.description || '').toLowerCase();
+
+                let aScore = 0;
+                let bScore = 0;
+
+                if (aName === searchLower) aScore += 1000;
+                if (bName === searchLower) bScore += 1000;
+
+                if (aName.startsWith(searchLower)) aScore += 100;
+                if (bName.startsWith(searchLower)) bScore += 100;
+
+                if (aName.includes(searchLower)) aScore += 10;
+                if (bName.includes(searchLower)) bScore += 10;
+
+                if (aDesc.includes(searchLower)) aScore += 1;
+                if (bDesc.includes(searchLower)) bScore += 1;
+
+                return bScore - aScore;
+            });
+        }
+
+        projects = projects.slice(0, 20);
 
         for (let project of projects) {
             const owner = await db.collection('users').findOne({ _id: project.owner });

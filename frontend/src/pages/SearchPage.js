@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
-import { usersAPI, friendsAPI, searchAPI } from '../services/api';
+import { usersAPI, friendsAPI, searchAPI, projectsAPI } from '../services/api';
 
 const SearchPage = ({ currentUser, onLogout }) => {
     const navigate = useNavigate();
@@ -10,6 +10,7 @@ const SearchPage = ({ currentUser, onLogout }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchTab, setSearchTab] = useState('users'); // 'users' or 'projects'
     const [allUsers, setAllUsers] = useState([]);
+    const [allProjects, setAllProjects] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [filteredProjects, setFilteredProjects] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -38,6 +39,7 @@ const SearchPage = ({ currentUser, onLogout }) => {
         }
 
         loadAllUsers();
+        loadAllProjects();
         loadFriends();
         loadSentRequests();
     }, [location.search]);
@@ -52,6 +54,17 @@ const SearchPage = ({ currentUser, onLogout }) => {
             console.error('Load users error:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadAllProjects = async () => {
+        try {
+            const response = await projectsAPI.getAll();
+            const projects = response.projects || [];
+            setAllProjects(projects);
+            setFilteredProjects(projects);
+        } catch (error) {
+            console.error('Load projects error:', error);
         }
     };
 
@@ -97,7 +110,7 @@ const SearchPage = ({ currentUser, onLogout }) => {
             }
         } else if (searchTab === 'projects') {
             if (!value.trim()) {
-                setFilteredProjects([]);
+                setFilteredProjects(allProjects);
             } else {
                 try {
                     const response = await searchAPI.projects(value);
@@ -140,7 +153,7 @@ const SearchPage = ({ currentUser, onLogout }) => {
                                 onClick={() => {
                                     setSearchTab('users');
                                     setSearchQuery('');
-                                    setFilteredProjects([]);
+                                    setFilteredUsers(allUsers);
                                 }}
                             >
                                 Users
@@ -154,7 +167,7 @@ const SearchPage = ({ currentUser, onLogout }) => {
                                 onClick={() => {
                                     setSearchTab('projects');
                                     setSearchQuery('');
-                                    setFilteredUsers([]);
+                                    setFilteredProjects(allProjects);
                                 }}
                             >
                                 Projects
@@ -275,7 +288,7 @@ const SearchPage = ({ currentUser, onLogout }) => {
                                     </div>
                                 ) : (
                                     <div className="text-center py-8 font-khula text-darker">
-                                        <p>{searchQuery ? `No projects found matching "${searchQuery}"` : 'Start typing to search for projects'}</p>
+                                        <p>{searchQuery ? `No projects found matching "${searchQuery}"` : 'No projects found'}</p>
                                     </div>
                                 )
                             )}
