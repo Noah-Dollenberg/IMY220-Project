@@ -18,21 +18,18 @@ const LoginForm = () => {
     const validateForm = () => {
         const newErrors = {};
 
-        // Email
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
         } else if (!validateEmail(formData.email)) {
             newErrors.email = 'Please enter a valid email address';
         }
 
-        // Password
         if (!formData.password) {
             newErrors.password = 'Password is required';
         } else if (formData.password.length < 6) {
             newErrors.password = 'Password must be at least 6 characters';
         }
 
-        // Not Robot
         if (!isRobotChecked) {
             newErrors.robot = 'Please confirm you are not a robot';
         }

@@ -107,7 +107,6 @@ const ProjectPage = ({ currentUser, onLogout }) => {
     };
 
     const handleInviteSent = () => {
-        // Invitation sent successfully
     };
 
     const handleCloseInviteModal = () => {
@@ -165,7 +164,7 @@ const ProjectPage = ({ currentUser, onLogout }) => {
         try {
             await projectsAPI.addActivity(projectId, discussionMessage);
             setDiscussionMessage('');
-            await fetchProject(); // Refresh to show new message
+            await fetchProject();
         } catch (err) {
             alert('Failed to post message: ' + err.message);
         } finally {
@@ -225,7 +224,6 @@ const ProjectPage = ({ currentUser, onLogout }) => {
             <div className="bg-accent rounded-lg p-6">
                 <h3 className="font-inter text-lg font-bold text-dark mb-4">About this Project</h3>
 
-                {/* Project Image */}
                 {project.image && (
                     <div className="mb-4">
                         <img
@@ -563,7 +561,6 @@ const ProjectPage = ({ currentUser, onLogout }) => {
             <div className="mb-6">
                 <h3 className="font-inter text-lg font-bold text-dark mb-4">Project Discussion</h3>
 
-                {/* Post Message Form - Members Only */}
                 {isProjectMember && (
                     <form onSubmit={handlePostMessage} className="mb-6 bg-accent rounded-lg p-4">
                         <label className="block font-khula font-medium text-dark mb-2">Add a message</label>
@@ -727,11 +724,9 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                 />
             )}
 
-            {/* File Preview Modal */}
             {showPreview && previewFile && (
                 <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={handleClosePreview}>
                     <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                        {/* Header */}
                         <div className="flex justify-between items-center p-4 border-b border-fill">
                             <div>
                                 <h3 className="font-inter text-lg font-bold text-dark">{previewFile.name}</h3>
@@ -747,7 +742,6 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                             </button>
                         </div>
 
-                        {/* Content */}
                         <div className="flex-1 overflow-auto p-4">
                             {previewFile.type?.startsWith('image/') ? (
                                 <img
@@ -806,7 +800,6 @@ const ProjectPage = ({ currentUser, onLogout }) => {
                             )}
                         </div>
 
-                        {/* Footer */}
                         <div className="flex justify-end gap-2 p-4 border-t border-fill">
                             <button
                                 onClick={handleClosePreview}

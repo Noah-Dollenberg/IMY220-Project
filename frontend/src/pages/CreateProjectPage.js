@@ -38,7 +38,7 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                 console.error('Failed to fetch friends:', error);
             }
         };
-        
+
         if (currentUser?._id || currentUser?.id) {
             fetchFriends();
         }
@@ -118,12 +118,10 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
 
         const hashtags = new Set();
 
-        // Add language-based hashtags
         if (formData.language) {
             hashtags.add(formData.language);
         }
 
-        // Map file extensions to technology hashtags
         const extensionMap = {
             'js': 'JavaScript',
             'jsx': 'React',
@@ -177,13 +175,11 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Check if it's an image
             if (!file.type.startsWith('image/')) {
                 alert('Please select an image file');
                 return;
             }
 
-            // Check file size (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
                 alert('Image size should be less than 5MB');
                 return;
@@ -191,7 +187,6 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
 
             setProjectImage(file);
 
-            // Create preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setProjectImagePreview(reader.result);
@@ -208,8 +203,8 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
 
 
     const toggleFriendSelection = (friendId) => {
-        setSelectedFriends(prev => 
-            prev.includes(friendId) 
+        setSelectedFriends(prev =>
+            prev.includes(friendId)
                 ? prev.filter(id => id !== friendId)
                 : [...prev, friendId]
         );
@@ -235,11 +230,9 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
         }
 
         try {
-            // Generate hashtags from uploaded files
             const fileObjects = uploadedFiles.map(f => f.file);
             const generatedHashtags = generateHashtagsFromFiles(fileObjects);
 
-            // Convert project image to base64 if present
             let imageBase64 = null;
             if (projectImage) {
                 const reader = new FileReader();
@@ -263,12 +256,10 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
             const response = await projectsAPI.create(projectData);
             setCreatedProjectId(response.projectId);
 
-            // Upload files if any
             if (uploadedFiles.length > 0) {
                 await projectsAPI.uploadFiles(response.projectId, fileObjects);
             }
 
-            // Send invitations to selected friends
             if (selectedFriends.length > 0) {
                 try {
                     await Promise.all(
@@ -304,7 +295,6 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
 
                         <form onSubmit={handleSubmit} className="space-y-8">
 
-                            {/* Project Image Upload */}
                             <div>
                                 <h3 className="font-inter text-lg font-semibold text-dark mb-4">Project Image (Optional)</h3>
                                 <div className="flex items-start gap-4">
@@ -352,9 +342,8 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                             <div>
                                 <h3 className="font-inter text-lg font-semibold text-dark mb-4">Project Files</h3>
                                 <div
-                                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                                        dragActive ? 'border-highlight bg-yellow-50' : 'border-fill'
-                                    }`}
+                                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive ? 'border-highlight bg-yellow-50' : 'border-fill'
+                                        }`}
                                     onDragEnter={handleDrag}
                                     onDragLeave={handleDrag}
                                     onDragOver={handleDrag}
@@ -413,9 +402,8 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                                             name="name"
                                             value={formData.name}
                                             onChange={handleInputChange}
-                                            className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${
-                                                errors.name ? 'border-red-500' : 'border-fill'
-                                            }`}
+                                            className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${errors.name ? 'border-red-500' : 'border-fill'
+                                                }`}
                                             placeholder="Enter a unique project name"
                                             required
                                         />
@@ -449,9 +437,8 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                                             name="description"
                                             value={formData.description}
                                             onChange={handleInputChange}
-                                            className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${
-                                                errors.description ? 'border-red-500' : 'border-fill'
-                                            }`}
+                                            className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${errors.description ? 'border-red-500' : 'border-fill'
+                                                }`}
                                             placeholder="Describe what your project does and its main features"
                                             rows="4"
                                             required
@@ -467,9 +454,8 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                                             name="version"
                                             value={formData.version}
                                             onChange={handleInputChange}
-                                            className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${
-                                                errors.version ? 'border-red-500' : 'border-fill'
-                                            }`}
+                                            className={`w-full px-3 py-2 border rounded font-khula focus:outline-none focus:border-highlight ${errors.version ? 'border-red-500' : 'border-fill'
+                                                }`}
                                             placeholder="1.0.0"
                                             required
                                         />
@@ -515,7 +501,7 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                             <div>
                                 <h3 className="font-inter text-lg font-semibold text-dark mb-2">Invite Friends (Optional)</h3>
                                 <p className="font-khula text-darker mb-4">Select friends to invite to collaborate on this project.</p>
-                                
+
                                 {friends.length > 0 ? (
                                     <div className="border border-fill rounded">
                                         <div className={`space-y-2 p-4 ${friends.length > 3 ? 'max-h-48 overflow-y-auto' : ''}`}>
@@ -540,11 +526,10 @@ const CreateProjectPage = ({ currentUser, onLogout }) => {
                                                         </div>
                                                         <button
                                                             type="button"
-                                                            className={`px-4 py-2 rounded font-khula transition-colors ${
-                                                                selectedFriends.includes(friendId)
+                                                            className={`px-4 py-2 rounded font-khula transition-colors ${selectedFriends.includes(friendId)
                                                                     ? 'bg-highlight text-dark hover:bg-yellow-400'
                                                                     : 'bg-fill text-dark hover:bg-accent'
-                                                            }`}
+                                                                }`}
                                                             onClick={() => toggleFriendSelection(friendId)}
                                                         >
                                                             {selectedFriends.includes(friendId) ? 'Invited' : 'Invite'}

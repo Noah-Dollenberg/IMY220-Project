@@ -34,14 +34,12 @@ const SignUpForm = () => {
     const validateForm = () => {
         const newErrors = {};
 
-        // Email
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
         } else if (!validateEmail(formData.email)) {
             newErrors.email = 'Please enter a valid email address';
         }
 
-        // Password
         if (!formData.password) {
             newErrors.password = 'Password is required';
         } else {
@@ -56,14 +54,12 @@ const SignUpForm = () => {
             }
         }
 
-        // Confirm password
         if (!formData.confirmPassword) {
             newErrors.confirmPassword = 'Please confirm your password';
         } else if (formData.password !== formData.confirmPassword) {
             newErrors.confirmPassword = 'Passwords do not match';
         }
 
-        // Not Robot
         if (!isRobotChecked) {
             newErrors.robot = 'Please confirm you are not a robot';
         }

@@ -205,12 +205,10 @@ export const projectsAPI = {
         const token = localStorage.getItem('userToken');
         const url = `${API_BASE_URL}/api/projects/${projectId}/files/${filename}`;
         
-        // Create a temporary link to trigger download
         const link = document.createElement('a');
         link.href = url;
         link.style.display = 'none';
         
-        // Add authorization header by creating a fetch request and converting to blob
         fetch(url, {
             headers: {
                 ...(token && { 'Authorization': `Bearer ${token}` })

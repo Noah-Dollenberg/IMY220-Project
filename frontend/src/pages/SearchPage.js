@@ -8,7 +8,7 @@ const SearchPage = ({ currentUser, onLogout }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchTab, setSearchTab] = useState('users'); // 'users' or 'projects'
+    const [searchTab, setSearchTab] = useState('users');
     const [allUsers, setAllUsers] = useState([]);
     const [allProjects, setAllProjects] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -18,7 +18,6 @@ const SearchPage = ({ currentUser, onLogout }) => {
     const [sentRequests, setSentRequests] = useState([]);
 
     useEffect(() => {
-        // Check for URL parameters (for hashtag navigation)
         const params = new URLSearchParams(location.search);
         const tab = params.get('tab');
         const query = params.get('q');
@@ -28,7 +27,6 @@ const SearchPage = ({ currentUser, onLogout }) => {
         }
         if (query) {
             setSearchQuery(query);
-            // Trigger search with the query
             if (tab === 'projects') {
                 searchAPI.projects(query).then(response => {
                     setFilteredProjects(response.projects || []);
@@ -142,7 +140,6 @@ const SearchPage = ({ currentUser, onLogout }) => {
                     <div className="bg-white rounded p-6">
                         <h1 className="font-inter text-2xl font-bold text-dark mb-6">Search</h1>
 
-                        {/* Search Tabs */}
                         <div className="flex gap-4 mb-6 border-b border-fill">
                             <button
                                 className={`pb-3 px-4 font-khula font-medium transition-colors ${
@@ -245,7 +242,6 @@ const SearchPage = ({ currentUser, onLogout }) => {
                                     </div>
                                 )
                             ) : (
-                                // Projects Tab
                                 filteredProjects.length > 0 ? (
                                     <div className="grid grid-cols-1 gap-4">
                                         {filteredProjects.map(project => (

@@ -23,7 +23,6 @@ MongoClient.connect(MONGODB_URI)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const projectId = req.params.id;
@@ -44,7 +43,6 @@ const upload = multer({
     limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Serve files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use(express.static(path.join(__dirname, '../frontend/public'), {
@@ -361,10 +359,8 @@ app.get('/api/users/:id', checkUser, async (req, res) => {
             });
         }
 
-        // Check if viewing own profile
         const isOwnProfile = req.user._id.toString() === id;
 
-        // Check if users are friends
         const isFriend = user.friends?.some(friendId =>
             friendId.toString() === req.user._id.toString()
         ) || false;
@@ -372,15 +368,12 @@ app.get('/api/users/:id', checkUser, async (req, res) => {
         let responseUser;
 
         if (isOwnProfile) {
-            // Own profile: return all data except password
             const { password: _, ...userWithoutPassword } = user;
             responseUser = userWithoutPassword;
         } else if (isFriend) {
-            // Friends: return full profile except password and sensitive arrays
             const { password: _, friendRequests, projectInvitations, ...userWithoutPassword } = user;
             responseUser = userWithoutPassword;
         } else {
-            // Not friends: return only name and profile picture
             responseUser = {
                 _id: user._id,
                 name: user.name,
@@ -418,7 +411,6 @@ app.put('/api/users/:id', checkUser, async (req, res) => {
             });
         }
 
-        // Check if user is admin or editing own profile
         const isAdmin = req.user.isAdmin;
         const isOwnProfile = req.user._id.toString() === id;
 
@@ -434,7 +426,6 @@ app.put('/api/users/:id', checkUser, async (req, res) => {
             updatedAt: new Date()
         };
 
-        // Prevent non-admins from changing admin status
         if (!req.user.isAdmin) {
             delete updateData.isAdmin;
         }
@@ -463,7 +454,6 @@ app.put('/api/users/:id', checkUser, async (req, res) => {
     }
 });
 
-// Delete user account (admin only)
 app.delete('/api/users/:id', checkUser, checkAdmin, async (req, res) => {
     try {
         const { id } = req.params;
@@ -483,13 +473,11 @@ app.delete('/api/users/:id', checkUser, checkAdmin, async (req, res) => {
             });
         }
 
-        // Remove user from all friends lists
         await db.collection('users').updateMany(
             { friends: new ObjectId(id) },
             { $pull: { friends: new ObjectId(id) } }
         );
 
-        // Remove user from all friend requests
         await db.collection('users').updateMany(
             {},
             {
@@ -500,29 +488,23 @@ app.delete('/api/users/:id', checkUser, checkAdmin, async (req, res) => {
             }
         );
 
-        // Remove user from all project members
         await db.collection('projects').updateMany(
             { members: new ObjectId(id) },
             { $pull: { members: new ObjectId(id) } }
         );
 
-        // Delete projects owned by the user
         const ownedProjects = await db.collection('projects').find({ owner: new ObjectId(id) }).toArray();
         for (const project of ownedProjects) {
-            // Delete project folder
             const projectPath = path.join(__dirname, '../uploads', project._id.toString());
             if (fs.existsSync(projectPath)) {
                 fs.rmSync(projectPath, { recursive: true, force: true });
             }
-            // Delete project activities
             await db.collection('checkins').deleteMany({ projectId: project._id });
         }
         await db.collection('projects').deleteMany({ owner: new ObjectId(id) });
 
-        // Delete all user's activities
         await db.collection('checkins').deleteMany({ userId: new ObjectId(id) });
 
-        // Delete the user
         await db.collection('users').deleteOne({ _id: new ObjectId(id) });
 
         res.json({
@@ -538,7 +520,6 @@ app.delete('/api/users/:id', checkUser, checkAdmin, async (req, res) => {
     }
 });
 
-// IMPORTANT: Keep invitations route BEFORE other project routes
 app.get('/api/projects/invitations', checkUser, async (req, res) => {
     try {
         const userInvitations = req.user.projectInvitations || { sent: [], received: [] };
@@ -598,7 +579,6 @@ app.post('/api/projects', checkUser, async (req, res) => {
             });
         }
 
-        // Use provided hashtags or fallback to language
         const projectHashtags = hashtags && hashtags.length > 0
             ? hashtags
             : [language || 'JavaScript'];
@@ -623,13 +603,11 @@ app.post('/api/projects', checkUser, async (req, res) => {
 
         const result = await db.collection('projects').insertOne(newProject);
 
-        // Create project folder
         const projectPath = path.join(__dirname, '../uploads', result.insertedId.toString());
         if (!fs.existsSync(projectPath)) {
             fs.mkdirSync(projectPath, { recursive: true });
         }
 
-        // Add project to user's projects array
         await db.collection('users').updateOne(
             { _id: req.user._id },
             { $addToSet: { projects: result.insertedId } }
@@ -735,7 +713,6 @@ app.delete('/api/activity/:id', checkUser, async (req, res) => {
             });
         }
 
-        // Check if user has permission to delete (activity owner, project owner, or admin)
         const project = await db.collection('projects').findOne({ _id: activity.projectId });
         const isAdmin = req.user.isAdmin;
         const isActivityOwner = activity.userId.toString() === req.user._id.toString();
@@ -938,10 +915,8 @@ app.post('/api/friends/request', checkUser, async (req, res) => {
         const userRequests = req.user.friendRequests || { sent: [], received: [] };
         const targetRequests = targetUser.friendRequests || { sent: [], received: [] };
 
-        // Check if target user already sent a request to current user (mutual request)
         if (targetRequests.sent.some(id => id.toString() === req.user._id.toString()) ||
             userRequests.received.some(id => id.toString() === userId)) {
-            // Mutual friend request - make them friends immediately
             await db.collection('users').updateOne(
                 { _id: req.user._id },
                 {
@@ -1333,7 +1308,6 @@ app.get('/api/search/projects', checkUser, async (req, res) => {
     }
 });
 
-// Make sure this comes after the invitations route
 app.get('/api/projects/:id', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1381,14 +1355,19 @@ app.get('/api/projects/:id', checkUser, async (req, res) => {
             .sort({ timestamp: -1 })
             .limit(10)
             .toArray();
+        const activityUserIds = [...new Set(recentActivity.map(activity => activity.userId))];
+        const activityUsers = await db.collection('users')
+            .find({ _id: { $in: activityUserIds } })
+            .toArray();
+        const userMap = new Map();
+        activityUsers.forEach(user => {
+            const { password: _, ...userInfo } = user;
+            userMap.set(user._id.toString(), userInfo);
+        });
 
-        for (let activity of recentActivity) {
-            const user = await db.collection('users').findOne({ _id: activity.userId });
-            if (user) {
-                const { password: _, ...userInfo } = user;
-                activity.userInfo = userInfo;
-            }
-        }
+        recentActivity.forEach(activity => {
+            activity.userInfo = userMap.get(activity.userId.toString());
+        });
 
         project.recentActivity = recentActivity;
 
@@ -1405,7 +1384,6 @@ app.get('/api/projects/:id', checkUser, async (req, res) => {
     }
 });
 
-// Project invitation endpoints
 app.post('/api/projects/:id/invite', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1518,7 +1496,6 @@ app.post('/api/projects/invitations/accept', checkUser, async (req, res) => {
             { $addToSet: { members: req.user._id } }
         );
 
-        // Add project to user's projects array
         await db.collection('users').updateOne(
             { _id: req.user._id },
             {
@@ -1579,15 +1556,12 @@ app.post('/api/projects/invitations/decline', checkUser, async (req, res) => {
     }
 });
 
-// Test endpoint
 app.get('/api/test', (req, res) => {
     console.log('TEST ENDPOINT HIT');
     res.json({ success: true, message: 'Server is working' });
 });
 
 
-
-// Migration endpoint to add missing fields to existing users
 app.post('/api/migrate/add-user-fields', async (req, res) => {
     try {
         const projectInvitationsResult = await db.collection('users').updateMany(
@@ -1615,7 +1589,6 @@ app.post('/api/migrate/add-user-fields', async (req, res) => {
     }
 });
 
-// Get user's projects
 app.get('/api/users/:id/projects', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1641,7 +1614,6 @@ app.get('/api/users/:id/projects', checkUser, async (req, res) => {
             .sort({ updatedAt: -1 })
             .toArray();
 
-        // Add owner info and check if user was removed
         for (let project of projects) {
             const owner = await db.collection('users').findOne({ _id: project.owner });
             if (owner) {
@@ -1652,7 +1624,6 @@ app.get('/api/users/:id/projects', checkUser, async (req, res) => {
                 };
             }
 
-            // Check if user is still a member
             const isStillMember = project.members.some(member => member.toString() === id);
             project.isRemoved = !isStillMember;
         }
@@ -1670,7 +1641,6 @@ app.get('/api/users/:id/projects', checkUser, async (req, res) => {
     }
 });
 
-// Update project details (owner or admin, when checked out)
 app.put('/api/projects/:id', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1701,7 +1671,6 @@ app.put('/api/projects/:id', checkUser, async (req, res) => {
             });
         }
 
-        // Admin can edit without checking out, owner must check out
         if (!isAdmin) {
             if (project.status !== 'checked-out' || project.checkedOutBy.toString() !== req.user._id.toString()) {
                 return res.status(400).json({
@@ -1738,7 +1707,6 @@ app.put('/api/projects/:id', checkUser, async (req, res) => {
     }
 });
 
-// Transfer project ownership (owner only, when checked out)
 app.put('/api/projects/:id/transfer-ownership', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1773,7 +1741,6 @@ app.put('/api/projects/:id/transfer-ownership', checkUser, async (req, res) => {
             });
         }
 
-        // Check if new owner is a member
         if (!project.members.some(member => member.toString() === newOwnerId)) {
             return res.status(400).json({
                 success: false,
@@ -1781,7 +1748,6 @@ app.put('/api/projects/:id/transfer-ownership', checkUser, async (req, res) => {
             });
         }
 
-        // Check if new owner exists
         const newOwner = await db.collection('users').findOne({ _id: new ObjectId(newOwnerId) });
         if (!newOwner) {
             return res.status(404).json({
@@ -1790,7 +1756,6 @@ app.put('/api/projects/:id/transfer-ownership', checkUser, async (req, res) => {
             });
         }
 
-        // Transfer ownership
         await db.collection('projects').updateOne(
             { _id: new ObjectId(id) },
             {
@@ -1814,7 +1779,6 @@ app.put('/api/projects/:id/transfer-ownership', checkUser, async (req, res) => {
     }
 });
 
-// Remove member from project (owner only, when checked out)
 app.delete('/api/projects/:id/members/:memberId', checkUser, async (req, res) => {
     try {
         const { id, memberId } = req.params;
@@ -1873,7 +1837,6 @@ app.delete('/api/projects/:id/members/:memberId', checkUser, async (req, res) =>
     }
 });
 
-// Add files to project (members only, when checked out)
 app.post('/api/projects/:id/files', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1936,7 +1899,6 @@ app.post('/api/projects/:id/files', checkUser, async (req, res) => {
     }
 });
 
-// Remove files from project (members only, when checked out)
 app.delete('/api/projects/:id/files', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1978,8 +1940,7 @@ app.delete('/api/projects/:id/files', checkUser, async (req, res) => {
             });
         }
 
-        // Allow file operations during creation or when checked out
-        const isJustCreated = new Date() - new Date(project.createdAt) < 60000; // 1 minute after creation
+        const isJustCreated = new Date() - new Date(project.createdAt) < 60000;
         const isCheckedOutByUser = project.status === 'checked-out' && project.checkedOutBy.toString() === req.user._id.toString();
 
         if (!isJustCreated && !isCheckedOutByUser) {
@@ -1989,7 +1950,6 @@ app.delete('/api/projects/:id/files', checkUser, async (req, res) => {
             });
         }
 
-        // Get file info before removing
         const filesToRemove = project.files.filter(file => {
             if (typeof file === 'string') {
                 return files.includes(file);
@@ -1997,7 +1957,6 @@ app.delete('/api/projects/:id/files', checkUser, async (req, res) => {
             return files.includes(file.filename) || files.includes(file.originalName);
         });
 
-        // Remove files from disk
         filesToRemove.forEach(file => {
             if (typeof file === 'object' && file.filename) {
                 const filePath = path.join(__dirname, '../uploads', id, file.filename);
@@ -2035,7 +1994,6 @@ app.delete('/api/projects/:id/files', checkUser, async (req, res) => {
     }
 });
 
-// Add activity/discussion message to project (members only)
 app.post('/api/projects/:id/activity', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -2063,7 +2021,6 @@ app.post('/api/projects/:id/activity', checkUser, async (req, res) => {
             });
         }
 
-        // Check if user is a member
         if (!project.members.some(member => member.toString() === req.user._id.toString())) {
             return res.status(403).json({
                 success: false,
@@ -2071,7 +2028,6 @@ app.post('/api/projects/:id/activity', checkUser, async (req, res) => {
             });
         }
 
-        // Create activity entry
         const activity = {
             projectId: new ObjectId(id),
             userId: req.user._id,
@@ -2095,7 +2051,6 @@ app.post('/api/projects/:id/activity', checkUser, async (req, res) => {
     }
 });
 
-// Delete project (owner or admin)
 app.delete('/api/projects/:id', checkUser, async (req, res) => {
     try {
         const { id } = req.params;
@@ -2125,7 +2080,6 @@ app.delete('/api/projects/:id', checkUser, async (req, res) => {
             });
         }
 
-        // Admin can delete anytime, owner must check in first
         if (!isAdmin && project.status !== 'checked-in') {
             return res.status(400).json({
                 success: false,
@@ -2133,22 +2087,18 @@ app.delete('/api/projects/:id', checkUser, async (req, res) => {
             });
         }
 
-        // Delete entire project folder
         const projectPath = path.join(__dirname, '../uploads', id);
         if (fs.existsSync(projectPath)) {
             fs.rmSync(projectPath, { recursive: true, force: true });
         }
 
-        // Remove project from all users' projects arrays
         await db.collection('users').updateMany(
             { projects: new ObjectId(id) },
             { $pull: { projects: new ObjectId(id) } }
         );
 
-        // Delete project activities
         await db.collection('checkins').deleteMany({ projectId: new ObjectId(id) });
 
-        // Delete the project
         await db.collection('projects').deleteOne({ _id: new ObjectId(id) });
 
         res.json({
@@ -2164,7 +2114,6 @@ app.delete('/api/projects/:id', checkUser, async (req, res) => {
     }
 });
 
-// Upload files to project
 app.post('/api/projects/:id/upload', checkUser, upload.array('files'), async (req, res) => {
     try {
         const { id } = req.params;
@@ -2198,8 +2147,7 @@ app.post('/api/projects/:id/upload', checkUser, upload.array('files'), async (re
             });
         }
 
-        // Allow uploads during creation (when project is just created) or when checked out
-        const isJustCreated = new Date() - new Date(project.createdAt) < 60000; // 1 minute after creation
+        const isJustCreated = new Date() - new Date(project.createdAt) < 60000;
         const isCheckedOutByUser = project.status === 'checked-out' && project.checkedOutBy.toString() === req.user._id.toString();
 
         if (!isJustCreated && !isCheckedOutByUser) {
@@ -2240,7 +2188,6 @@ app.post('/api/projects/:id/upload', checkUser, upload.array('files'), async (re
     }
 });
 
-// Download file from project
 app.get('/api/projects/:id/files/:filename', checkUser, async (req, res) => {
     try {
         const { id, filename } = req.params;
@@ -2295,7 +2242,6 @@ app.get('/api/projects/:id/files/:filename', checkUser, async (req, res) => {
     }
 });
 
-// Remove project from user's list (for removed participants only)
 app.delete('/api/users/:userId/projects/:projectId', checkUser, async (req, res) => {
     try {
         const { userId, projectId } = req.params;
@@ -2322,7 +2268,6 @@ app.delete('/api/users/:userId/projects/:projectId', checkUser, async (req, res)
             });
         }
 
-        // Check if user is no longer a member (was removed)
         const isStillMember = project.members.some(member => member.toString() === userId);
         if (isStillMember) {
             return res.status(400).json({

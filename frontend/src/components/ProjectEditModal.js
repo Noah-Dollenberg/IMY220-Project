@@ -9,14 +9,10 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
         version: project.version || ''
     });
     const [loading, setLoading] = useState(false);
-
-
-
     const isOwner = project.owner?.toString() === currentUser?._id;
     const isMember = project.members?.some(member => member.toString() === currentUser?._id);
-    const isCheckedOutByUser = project.status === 'checked-out' && 
-                              project.checkedOutBy?.toString() === currentUser?._id;
-
+    const isCheckedOutByUser = project.status === 'checked-out' &&
+        project.checkedOutBy?.toString() === currentUser?._id;
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -24,8 +20,6 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
             [name]: value
         }));
     };
-
-
 
     const handleUpdateProject = async (e) => {
         e.preventDefault();
@@ -75,14 +69,6 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
         }
     };
 
-
-
-
-
-
-
-
-
     if (!isCheckedOutByUser) {
         return (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -116,7 +102,6 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                 </div>
 
                 <div className="space-y-6">
-                    {/* Project Details */}
                     {isOwner && (
                         <div className="bg-accent rounded-lg p-4">
                             <h3 className="font-inter text-lg font-bold text-dark mb-4">Project Details</h3>
@@ -159,7 +144,6 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                         </div>
                     )}
 
-                    {/* Members Management */}
                     {isOwner && (
                         <div className="bg-accent rounded-lg p-4">
                             <h3 className="font-inter text-lg font-bold text-dark mb-4">Members</h3>
@@ -198,7 +182,6 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                         </div>
                     )}
 
-                    {/* Update Project Button */}
                     {isOwner && (
                         <div className="flex justify-end">
                             <button
@@ -210,12 +193,6 @@ const ProjectEditModal = ({ project, currentUser, onClose, onUpdate }) => {
                             </button>
                         </div>
                     )}
-
-
-
-
-
-
                 </div>
             </div>
         </div>

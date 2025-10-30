@@ -12,6 +12,7 @@ const InviteFriendsModal = ({ projectId, onClose, onInviteSent }) => {
 
     useEffect(() => {
         fetchFriends();
+        fetchExistingInvitations();
     }, []);
 
     useEffect(() => {
@@ -35,6 +36,56 @@ const InviteFriendsModal = ({ projectId, onClose, onInviteSent }) => {
             console.error('Failed to fetch friends:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchExistingInvitations = async () => {
+        try {
+            const currentUser = JSON.parse(localStorage.getItem('userData'));
+
+            const userResponse = await fetch(`http://localhost:3000/api/users/${currentUser._id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!userResponse.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+
+            const userData = await userResponse.json();
+            const projectResponse = await projectsAPI.getById(projectId);
+            const project = projectResponse.project;
+            const alreadyInvitedOrMember = new Set();
+
+            if (userData.user.projectInvitations && userData.user.projectInvitations.sent) {
+                userData.user.projectInvitations.sent
+                    .filter(inv => {
+                        const invProjectId = typeof inv.projectId === 'object' && inv.projectId._id
+                            ? inv.projectId._id
+                            : inv.projectId;
+                        return invProjectId.toString() === projectId;
+                    })
+                    .forEach(inv => {
+                        const invUserId = typeof inv.userId === 'object' && inv.userId._id
+                            ? inv.userId._id
+                            : inv.userId;
+                        alreadyInvitedOrMember.add(invUserId.toString());
+                    });
+            }
+
+            if (project && project.members) {
+                project.members.forEach(memberId => {
+                    const memberIdStr = typeof memberId === 'object' && memberId._id
+                        ? memberId._id.toString()
+                        : memberId.toString();
+                    alreadyInvitedOrMember.add(memberIdStr);
+                });
+            }
+
+            setInvitedUsers(alreadyInvitedOrMember);
+        } catch (error) {
+            console.error('Failed to fetch existing invitations:', error);
         }
     };
 
@@ -108,14 +159,14 @@ const InviteFriendsModal = ({ projectId, onClose, onInviteSent }) => {
                                     </div>
                                     <button
                                         className={`px-3 py-1 rounded font-khula text-sm transition-colors ${
-                                            invitedUsers.has(friend._id) 
-                                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                                            invitedUsers.has(friend._id.toString())
+                                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                                 : 'bg-highlight text-dark hover:bg-yellow-400'
                                         }`}
-                                        onClick={() => !invitedUsers.has(friend._id) && handleInvite(friend._id)}
-                                        disabled={inviting.has(friend._id) || invitedUsers.has(friend._id)}
+                                        onClick={() => !invitedUsers.has(friend._id.toString()) && handleInvite(friend._id)}
+                                        disabled={inviting.has(friend._id) || invitedUsers.has(friend._id.toString())}
                                     >
-                                        {inviting.has(friend._id) ? 'Inviting...' : invitedUsers.has(friend._id) ? 'Invited' : 'Invite'}
+                                        {inviting.has(friend._id) ? 'Inviting...' : invitedUsers.has(friend._id.toString()) ? 'Invited' : 'Invite'}
                                     </button>
                                 </div>
                             ))
