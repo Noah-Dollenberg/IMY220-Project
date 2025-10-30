@@ -540,20 +540,51 @@ app.get('/api/projects/invitations', checkUser, async (req, res) => {
 app.get('/api/projects', checkUser, async (req, res) => {
     try {
         const projects = await db.collection('projects')
-            .find({ $or: [{ isPublic: true }, { members: req.user._id }] })
-            .sort({ updatedAt: -1 })
+            .aggregate([
+                { $match: { $or: [{ isPublic: true }, { members: req.user._id }] } },
+                { $sort: { updatedAt: -1 } },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'owner',
+                        foreignField: '_id',
+                        as: 'ownerData'
+                    }
+                },
+                { $unwind: { path: '$ownerData', preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        _id: 1,
+                        name: 1,
+                        description: 1,
+                        language: 1,
+                        version: 1,
+                        isPublic: 1,
+                        owner: 1,
+                        members: 1,
+                        files: 1,
+                        image: 1,
+                        hashtags: 1,
+                        status: 1,
+                        checkoutUser: 1,
+                        checkoutTime: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                        ownerInfo: {
+                            $cond: {
+                                if: { $ifNull: ['$ownerData', false] },
+                                then: {
+                                    _id: '$ownerData._id',
+                                    name: '$ownerData.name',
+                                    email: '$ownerData.email'
+                                },
+                                else: null
+                            }
+                        }
+                    }
+                }
+            ])
             .toArray();
-
-        for (let project of projects) {
-            const owner = await db.collection('users').findOne({ _id: project.owner });
-            if (owner) {
-                project.ownerInfo = {
-                    _id: owner._id,
-                    name: owner.name,
-                    email: owner.email
-                };
-            }
-        }
 
         res.json({
             success: true,
@@ -643,43 +674,74 @@ app.get('/api/activity/:feedType', checkUser, async (req, res) => {
     try {
         const { feedType } = req.params;
 
-        let query = {};
+        let matchStage = {};
         if (feedType === 'local') {
             const userProjects = await db.collection('projects')
                 .find({ members: req.user._id })
                 .toArray();
 
             const projectIds = userProjects.map(p => p._id);
-            query = { projectId: { $in: projectIds } };
+            matchStage = { projectId: { $in: projectIds } };
         }
 
         const activities = await db.collection('checkins')
-            .find(query)
-            .sort({ timestamp: -1 })
-            .limit(20)
+            .aggregate([
+                { $match: matchStage },
+                { $sort: { timestamp: -1 } },
+                { $limit: 20 },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'user'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'projects',
+                        localField: 'projectId',
+                        foreignField: '_id',
+                        as: 'project'
+                    }
+                },
+                { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: '$project', preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        _id: 1,
+                        userId: 1,
+                        projectId: 1,
+                        message: 1,
+                        files: 1,
+                        timestamp: 1,
+                        userInfo: {
+                            $cond: {
+                                if: { $ifNull: ['$user', false] },
+                                then: {
+                                    _id: '$user._id',
+                                    name: '$user.name',
+                                    email: '$user.email'
+                                },
+                                else: null
+                            }
+                        },
+                        projectInfo: {
+                            $cond: {
+                                if: { $ifNull: ['$project', false] },
+                                then: {
+                                    _id: '$project._id',
+                                    name: '$project.name',
+                                    description: '$project.description',
+                                    status: '$project.status'
+                                },
+                                else: null
+                            }
+                        }
+                    }
+                }
+            ])
             .toArray();
-
-        for (let activity of activities) {
-            const user = await db.collection('users').findOne({ _id: activity.userId });
-            const project = await db.collection('projects').findOne({ _id: activity.projectId });
-
-            if (user) {
-                activity.userInfo = {
-                    _id: user._id,
-                    name: user.name,
-                    email: user.email
-                };
-            }
-
-            if (project) {
-                activity.projectInfo = {
-                    _id: project._id,
-                    name: project.name,
-                    description: project.description,
-                    status: project.status
-                };
-            }
-        }
 
         res.json({
             success: true,
@@ -1609,24 +1671,48 @@ app.get('/api/users/:id/projects', checkUser, async (req, res) => {
         }
 
         const projectIds = user.projects || [];
+
+        // Use aggregation pipeline to join owner data in a single query
         const projects = await db.collection('projects')
-            .find({ _id: { $in: projectIds } })
-            .sort({ updatedAt: -1 })
+            .aggregate([
+                { $match: { _id: { $in: projectIds } } },
+                { $sort: { updatedAt: -1 } },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'owner',
+                        foreignField: '_id',
+                        as: 'ownerData'
+                    }
+                },
+                { $unwind: { path: '$ownerData', preserveNullAndEmptyArrays: true } },
+                {
+                    $addFields: {
+                        ownerInfo: {
+                            $cond: {
+                                if: { $ifNull: ['$ownerData', false] },
+                                then: {
+                                    _id: '$ownerData._id',
+                                    name: '$ownerData.name',
+                                    email: '$ownerData.email'
+                                },
+                                else: null
+                            }
+                        },
+                        isRemoved: {
+                            $not: {
+                                $in: [new ObjectId(id), '$members']
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        ownerData: 0
+                    }
+                }
+            ])
             .toArray();
-
-        for (let project of projects) {
-            const owner = await db.collection('users').findOne({ _id: project.owner });
-            if (owner) {
-                project.ownerInfo = {
-                    _id: owner._id,
-                    name: owner.name,
-                    email: owner.email
-                };
-            }
-
-            const isStillMember = project.members.some(member => member.toString() === id);
-            project.isRemoved = !isStillMember;
-        }
 
         res.json({
             success: true,
