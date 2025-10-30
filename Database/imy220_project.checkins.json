@@ -1,0 +1,592 @@
+[{
+  "_id": {
+    "$oid": "6902282690818dc6bc461f88"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "6902275090818dc6bc461f86"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T14:43:50.745Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690228ee90818dc6bc461f8b"
+  },
+  "projectId": {
+    "$oid": "690228ee90818dc6bc461f8a"
+  },
+  "userId": {
+    "$oid": "6902286190818dc6bc461f89"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T14:47:10.088Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690229b690818dc6bc461f8e"
+  },
+  "projectId": {
+    "$oid": "690229b690818dc6bc461f8d"
+  },
+  "userId": {
+    "$oid": "6902296390818dc6bc461f8c"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T14:50:30.615Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69022ef860da86505c0b63f8"
+  },
+  "projectId": {
+    "$oid": "69022ef760da86505c0b63f7"
+  },
+  "userId": {
+    "$oid": "69022e5c60da86505c0b63f6"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T15:12:56.003Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69022f7660da86505c0b63fb"
+  },
+  "projectId": {
+    "$oid": "69022f7660da86505c0b63fa"
+  },
+  "userId": {
+    "$oid": "69022f4260da86505c0b63f9"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T15:15:02.509Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690230e360da86505c0b63fe"
+  },
+  "projectId": {
+    "$oid": "690230e360da86505c0b63fd"
+  },
+  "userId": {
+    "$oid": "6902307e60da86505c0b63fc"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T15:21:07.651Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6902480b4917a6b3b9ed1737"
+  },
+  "projectId": {
+    "$oid": "6902480b4917a6b3b9ed1736"
+  },
+  "userId": {
+    "$oid": "690225887af6898c7daeb33a"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T16:59:55.883Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690248a54917a6b3b9ed173a"
+  },
+  "projectId": {
+    "$oid": "690248a54917a6b3b9ed1739"
+  },
+  "userId": {
+    "$oid": "6902486c4917a6b3b9ed1738"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T17:02:29.299Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69024e7f4917a6b3b9ed173d"
+  },
+  "projectId": {
+    "$oid": "69024e7f4917a6b3b9ed173c"
+  },
+  "userId": {
+    "$oid": "69024e234917a6b3b9ed173b"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T17:27:27.238Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69024eb64917a6b3b9ed173f"
+  },
+  "projectId": {
+    "$oid": "69024eb54917a6b3b9ed173e"
+  },
+  "userId": {
+    "$oid": "69024e234917a6b3b9ed173b"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T17:28:22.084Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69024f454917a6b3b9ed1742"
+  },
+  "projectId": {
+    "$oid": "69024f454917a6b3b9ed1741"
+  },
+  "userId": {
+    "$oid": "69024ee24917a6b3b9ed1740"
+  },
+  "type": "check-in",
+  "message": "Initial project creation",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-29T17:30:45.796Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6903160cc374f7bfe76e6fbc"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "6902275090818dc6bc461f86"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:38:52.467Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69031630c374f7bfe76e6fbd"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "6902275090818dc6bc461f86"
+  },
+  "type": "discussion",
+  "message": "Just added some files for the project",
+  "timestamp": {
+    "$date": "2025-10-30T07:39:28.080Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69031642c374f7bfe76e6fbe"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "6902275090818dc6bc461f86"
+  },
+  "type": "check-in",
+  "message": "New files added to project.",
+  "version": "1.0.1",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:39:46.044Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6903166bc374f7bfe76e6fbf"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "6902275090818dc6bc461f86"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.1",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:40:27.639Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6903167fc374f7bfe76e6fc0"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "6902275090818dc6bc461f86"
+  },
+  "type": "check-in",
+  "message": "Unnecessary folder removed.",
+  "version": "1.0.2",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:40:47.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690316d0c374f7bfe76e6fc1"
+  },
+  "projectId": {
+    "$oid": "690228ee90818dc6bc461f8a"
+  },
+  "userId": {
+    "$oid": "6902286190818dc6bc461f89"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:42:08.235Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690316ffc374f7bfe76e6fc2"
+  },
+  "projectId": {
+    "$oid": "690228ee90818dc6bc461f8a"
+  },
+  "userId": {
+    "$oid": "6902286190818dc6bc461f89"
+  },
+  "type": "check-in",
+  "message": "index.html and server.js added to the project.",
+  "version": "1.0.1",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:42:55.617Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69031757c374f7bfe76e6fc3"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "6902275090818dc6bc461f86"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.2",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:44:23.935Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69031774c374f7bfe76e6fc4"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "6902275090818dc6bc461f86"
+  },
+  "type": "check-in",
+  "message": "Removed bigger files.",
+  "version": "1.0.3",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:44:52.920Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690317abc374f7bfe76e6fc5"
+  },
+  "projectId": {
+    "$oid": "690229b690818dc6bc461f8d"
+  },
+  "userId": {
+    "$oid": "6902296390818dc6bc461f8c"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:45:47.695Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690317e1c374f7bfe76e6fc6"
+  },
+  "projectId": {
+    "$oid": "690229b690818dc6bc461f8d"
+  },
+  "userId": {
+    "$oid": "6902296390818dc6bc461f8c"
+  },
+  "type": "check-in",
+  "message": "Started coding the app.jsx file for my program",
+  "version": "1.0.1",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:46:41.108Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69031846c374f7bfe76e6fc7"
+  },
+  "projectId": {
+    "$oid": "69022f7660da86505c0b63fa"
+  },
+  "userId": {
+    "$oid": "69022f4260da86505c0b63f9"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:48:22.026Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6903186bc374f7bfe76e6fc8"
+  },
+  "projectId": {
+    "$oid": "69022f7660da86505c0b63fa"
+  },
+  "userId": {
+    "$oid": "69022f4260da86505c0b63f9"
+  },
+  "type": "check-in",
+  "message": "Still wanting to add more files",
+  "version": "1.0.1",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:48:59.396Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690318a3c374f7bfe76e6fc9"
+  },
+  "projectId": {
+    "$oid": "690230e360da86505c0b63fd"
+  },
+  "userId": {
+    "$oid": "6902307e60da86505c0b63fc"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:49:55.259Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690319a4c374f7bfe76e6fca"
+  },
+  "projectId": {
+    "$oid": "69024f454917a6b3b9ed1741"
+  },
+  "userId": {
+    "$oid": "69024ee24917a6b3b9ed1740"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:54:12.230Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69031a03c374f7bfe76e6fcb"
+  },
+  "projectId": {
+    "$oid": "69024eb54917a6b3b9ed173e"
+  },
+  "userId": {
+    "$oid": "69024e234917a6b3b9ed173b"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:55:47.416Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69031a26c374f7bfe76e6fcc"
+  },
+  "projectId": {
+    "$oid": "69024eb54917a6b3b9ed173e"
+  },
+  "userId": {
+    "$oid": "69024e234917a6b3b9ed173b"
+  },
+  "type": "check-in",
+  "message": "This is only the beginning...",
+  "version": "1.0.1",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T07:56:22.314Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69031cd43338454d0c4a1933"
+  },
+  "projectId": {
+    "$oid": "69022ef760da86505c0b63f7"
+  },
+  "userId": {
+    "$oid": "69022e5c60da86505c0b63f6"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.0",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T08:07:48.566Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69036dd68f4f59ab9a80110f"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "6902275090818dc6bc461f86"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.3",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T13:53:26.916Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69036e078f4f59ab9a801110"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "6902275090818dc6bc461f86"
+  },
+  "type": "check-in",
+  "message": "Changed ownership to Noah",
+  "version": "1.0.4",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T13:54:15.738Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "69037086bf5c73f159e4f447"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "69022e5c60da86505c0b63f6"
+  },
+  "type": "check-out",
+  "message": "Project checked out for editing",
+  "version": "1.0.4",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T14:04:54.216Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "690370a2bf5c73f159e4f448"
+  },
+  "projectId": {
+    "$oid": "6902282590818dc6bc461f87"
+  },
+  "userId": {
+    "$oid": "69022e5c60da86505c0b63f6"
+  },
+  "type": "check-in",
+  "message": "No, I don't want to be the owner, Dilion must!",
+  "version": "1.0.4",
+  "filesAdded": [],
+  "timestamp": {
+    "$date": "2025-10-30T14:05:22.406Z"
+  }
+}]

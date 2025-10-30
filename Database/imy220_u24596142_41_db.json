@@ -1,0 +1,27 @@
+{
+  "type": "Compass Connections",
+  "version": {
+    "$numberInt": "1"
+  },
+  "connections": [
+    {
+      "id": "23279d3f-0cb5-48c8-9d7d-229c32669e11",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1761834863319"
+        }
+      },
+      "favorite": {
+        "name": "imy220-project",
+        "color": "color3"
+      },
+      "savedConnectionType": "favorite",
+      "connectionOptions": {
+        "connectionString": "mongodb+srv://NJDollenberg:yy1oc80ws1Mg7ugH@imy220-project.esoqdrz.mongodb.net/imy220_project?retryWrites=true&w=majority&appName=imy220-project",
+        "oidc": {
+          "serializedState": "eyJvaWRjUGx1Z2luU3RhdGVWZXJzaW9uIjoxLCJzdGF0ZSI6W119"
+        }
+      }
+    }
+  ]
+}
